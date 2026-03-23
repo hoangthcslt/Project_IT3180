@@ -13,3 +13,10 @@
 *   **Tên biến/Hàm:** Viết thường chữ cái đầu (camelCase). VD: `maKhoanThu`, `tinhTongTien()`.
 *   **Căn lề:** Dùng 4 khoảng trắng (hoặc 1 tab). Không để dòng code dài quá 80 ký tự.
 *   **Comment Code:** Sử dụng `/** Javadoc */` trước các hàm quan trọng để giải thích chức năng của hàm đó.
+
+## 3. Quy tắc đặt tên nhánh (Naming Convention)
+*   **các em đặt tên nhánh theo cấu trúc:** <loại-nhánh>/<tên-công-việc>
+*   **VÍ DỤ:** 
+*    Tạo tính năng mới: feature/login, feature/them-khoan-thu, feature/tao-database
+*    Sửa lỗi bug: bugfix/loi-tinh-tien, bugfix/sai-giao-dien
+*   **(Lưu ý: Tên nhánh viết thường, không dấu, cách nhau bằng dấu gạch ngang).**
