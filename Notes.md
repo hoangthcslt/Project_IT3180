@@ -2,14 +2,14 @@
 
 ### Bước 1: Lấy code mới nhất về máy 
 git checkout main
-git pull origin main
+<br>git pull origin main
 
 ### Bước 2: Tạo nhánh mới để làm task của mình (Ví dụ em làm chức năng đăng nhập)
 git checkout -b feature/login
 
 ### Bước 3: Code xong, lưu code lại
 git add .
-git commit -m "......" 
+<br>git commit -m "......" 
 
 ### Bước 4: Đẩy code của em lên GitHub (ví dụ e tạo branch feature/login)
 git push origin feature/login
