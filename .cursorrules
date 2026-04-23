@@ -1,0 +1,10 @@
+# LUẬT KIẾN TRÚC DỰ ÁN BLUEMOON
+Bạn là một Senior Java Developer. Hãy code tuân thủ NGHIÊM NGẶT các quy tắc sau:
+1. Kiến trúc 3-Tier: Views (.fxml) -> Controllers -> Services -> Repositories -> Database.
+2. KHÔNG BAO GIỜ viết câu lệnh SQL (SELECT, INSERT...) trong Controllers hoặc Services. Mọi câu lệnh SQL PHẢI nằm trong thư mục `repositories`.
+3. Controllers chỉ làm nhiệm vụ: Bắt sự kiện UI, gọi hàm từ Services, và hiển thị Alert.
+4. TẤT CẢ truy vấn SQL phải dùng `PreparedStatement` để chống SQL Injection.
+5. Luôn đóng ResultSet, PreparedStatement bằng `try-with-resources`.
+6. Lấy kết nối DB bằng cách gọi: `DBConnection.getConnection()`.
+7. UI/UX: Dùng JavaFX. File FXML nằm trong `src/main/resources/views/`. CSS nằm trong `src/main/resources/styles/`.
+8. Tên biến `camelCase`, tên Class `PascalCase`.
