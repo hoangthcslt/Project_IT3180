@@ -10,24 +10,23 @@ Dự án được tổ chức theo mô hình phân lớp để đảm bảo tín
 
 ## 2. Cấu trúc thư mục (Package Structure)
 ```text
-src/
- ├── main/
- │    ├── java/com/bluemoon/
- │    │    ├── application/      # Chứa class chạy Main App
- │    │    ├── controllers/      # Điều hướng UI, nhận input từ người dùng
- │    │    │    ├── NhanKhauController.java
- │    │    │    └── KhoanThuController.java
- │    │    ├── services/         # Chứa Logic nghiệp vụ (Tính phí, kiểm tra điều kiện)
- │    │    │    ├── FeeService.java
- │    │    │    └── ResidentService.java
- │    │    ├── repositories/     # Thao tác trực tiếp với Database (SQL queries)
- │    │    │    ├── UserRepository.java
- │    │    │    └── PaymentRepository.java
- │    │    ├── models/           # Các Plain Old Java Objects (POJO)
- │    │    │    ├── User.java
- │    │    │    └── HoKhau.java
- │    │    └── utils/            # DBConnection, PasswordHasher, Config...
- │    └── resources/
- │         ├── views/            # Chứa file .fxml (Scene Builder)
- │         ├── styles/           # Chứa file .css để làm đẹp giao diện
- │         └── assets/           # Hình ảnh, icons của ứng dụng
+BlueMoonProject/
+├── pom.xml                       <-- Quản lý thư viện (MySQL, BCrypt, POI, JavaFX)
+├── .cursorrules                  <-- Luật cho AI Agent
+├── DATABASE_SCHEMA.md            <-- Mô tả CSDL cho AI
+├── src/main/java/com/bluemoon/
+│   ├── application/
+│   │   └── Main.java             <-- Điểm khởi chạy App và load giao diện Login
+│   ├── controllers/              <-- Nhận sự kiện từ UI, gọi Service (VD: LoginController)
+│   ├── services/                 <-- Xử lý Logic (VD: Kiểm tra tính toán tiền, map hộ khẩu...)
+│   ├── repositories/             <-- Chỉ chứa SQL: SELECT, INSERT, UPDATE, DELETE (Thay cho DAO)
+│   ├── models/                   <-- Entities (User, HoKhau, KhoanThu...)
+│   └── utils/                    
+│       ├── DatabaseConnection.java <-- Singleton kết nối DB
+│       └── PasswordHasher.java     <-- Hàm mã hóa/kiểm tra mật khẩu BCrypt
+│       └── SessionManager.java     <-- Lưu thông tin User đang đăng nhập
+└── src/main/resources/
+    ├── views/                    <-- Chứa toàn bộ giao diện .fxml
+    ├── styles/                   <-- Chứa css (như thành viên của bạn đặt tên là styles cũng rất chuẩn)
+    ├── images/                   <-- Logo, icon
+    └── database/                 <-- Chứa file schema.sql và seed.sql để team dễ setup DB
