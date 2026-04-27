@@ -35,11 +35,11 @@
             <padding>
                 <Insets bottom="20.0" left="10.0" right="10.0" top="20.0" />
             </padding>
-            <Button maxWidth="MAX_VALUE" mnemonicParsing="false" onAction="#handleHoKhau" text="Hộ khẩu" style="-fx-background-color: #ecf0f1; -fx-font-weight: bold; -fx-padding: 10px;" />
-            <Button maxWidth="MAX_VALUE" mnemonicParsing="false" onAction="#handleNhanKhau" text="Nhân khẩu" style="-fx-background-color: #ecf0f1; -fx-font-weight: bold; -fx-padding: 10px;" />
-            <Button maxWidth="MAX_VALUE" mnemonicParsing="false" onAction="#handleKhoanThu" text="Khoản thu" style="-fx-background-color: #ecf0f1; -fx-font-weight: bold; -fx-padding: 10px;" />
-            <Button maxWidth="MAX_VALUE" mnemonicParsing="false" onAction="#handleNopTien" text="Nộp tiền" style="-fx-background-color: #ecf0f1; -fx-font-weight: bold; -fx-padding: 10px;" />
-            <Button maxWidth="MAX_VALUE" mnemonicParsing="false" onAction="#handleThongKe" text="Thống kê" style="-fx-background-color: #ecf0f1; -fx-font-weight: bold; -fx-padding: 10px;" />
+            <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#handleHoKhau" text="Hộ khẩu" style="-fx-background-color: #ecf0f1; -fx-font-weight: bold; -fx-padding: 10px;" />
+            <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#handleNhanKhau" text="Nhân khẩu" style="-fx-background-color: #ecf0f1; -fx-font-weight: bold; -fx-padding: 10px;" />
+            <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#handleKhoanThu" text="Khoản thu" style="-fx-background-color: #ecf0f1; -fx-font-weight: bold; -fx-padding: 10px;" />
+            <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#handleNopTien" text="Nộp tiền" style="-fx-background-color: #ecf0f1; -fx-font-weight: bold; -fx-padding: 10px;" />
+            <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#handleThongKe" text="Thống kê" style="-fx-background-color: #ecf0f1; -fx-font-weight: bold; -fx-padding: 10px;" />
         </VBox>
     </left>
 
