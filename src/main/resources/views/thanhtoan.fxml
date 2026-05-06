@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bluemoon.controllers.PaymentController" spacing="10" alignment="CENTER" style="-fx-padding: 20;">
+    <Label text="Thanh Toán Phí" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+    
+    <GridPane spacing="10" alignment="CENTER">
+        <Label text="Tìm kiếm chủ hộ:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+        <TextField fx:id="txtTimKiem" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+        
+        <Label text="Chọn khoản thu:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+        <ComboBox fx:id="cbKhoanThu" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+        
+        <Label text="Nợ hiện tại:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+        <Label fx:id="lblNoHienTai" text="0" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+        
+        <Label text="Số tiền nộp:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+        <TextField fx:id="txtSoTienNop" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+        
+        <Label text="Hình thức nộp:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+        <ComboBox fx:id="cbHinhThuc" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+        
+        <Label text="Người nộp:" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+        <TextField fx:id="txtNguoiNop" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+    </GridPane>
+    
+    <Button text="Thực hiện thanh toán" fx:id="btnThanhToan" onAction="#handleThanhToan"/>
+</VBox>
