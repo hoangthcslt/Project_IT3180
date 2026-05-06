@@ -5,11 +5,18 @@ import com.bluemoon.utils.SessionManager;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import java.io.IOException;
 
 public class DashboardController {
 
     @FXML
     private Label lblWelcome;
+    
+    @FXML
+    private BorderPane mainBorderPane;
 
     @FXML
     public void initialize() {
@@ -18,10 +25,20 @@ public class DashboardController {
             lblWelcome.setText("Xin chào, " + currentUser.getUsername() + " (" + currentUser.getRole() + ")");
         }
     }
+    
+    private void loadView(String fxml) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/" + fxml));
+            Node view = loader.load();
+            mainBorderPane.setCenter(view);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     @FXML
     void handleHoKhau(ActionEvent event) {
-        // Todo: Implement Hộ khẩu feature
+        loadView("hokhau.fxml");
     }
 
     @FXML
@@ -31,7 +48,7 @@ public class DashboardController {
 
     @FXML
     void handleKhoanThu(ActionEvent event) {
-        // Todo: Implement Khoản thu feature
+        loadView("khoanthu.fxml");
     }
 
     @FXML
