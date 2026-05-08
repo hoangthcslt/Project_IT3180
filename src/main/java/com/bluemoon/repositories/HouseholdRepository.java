@@ -49,6 +49,28 @@ public class HouseholdRepository {
         return false;
     }
 
+    public HoKhau findByMaHoKhau(String maHoKhau) {
+        String sql = "SELECT * FROM ho_khau WHERE ma_ho_khau = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, maHoKhau);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return new HoKhau(
+                            rs.getInt("id"),
+                            rs.getString("ma_ho_khau"),
+                            rs.getString("ten_chu_ho"),
+                            rs.getBigDecimal("dien_tich"),
+                            rs.getDate("ngay_lap").toLocalDate()
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public boolean insert(HoKhau hoKhau) {
         String sql = "INSERT INTO ho_khau (ma_ho_khau, ten_chu_ho, dien_tich, ngay_lap) VALUES (?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
