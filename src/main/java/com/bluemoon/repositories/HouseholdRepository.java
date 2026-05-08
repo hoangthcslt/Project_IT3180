@@ -33,6 +33,22 @@ public class HouseholdRepository {
         return list;
     }
 
+    public boolean isMaHoKhauExists(String maHoKhau) {
+        String sql = "SELECT COUNT(*) FROM ho_khau WHERE ma_ho_khau = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, maHoKhau);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public boolean insert(HoKhau hoKhau) {
         String sql = "INSERT INTO ho_khau (ma_ho_khau, ten_chu_ho, dien_tich, ngay_lap) VALUES (?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();

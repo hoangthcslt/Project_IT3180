@@ -17,6 +17,10 @@ public class FeeService {
         return repository.findAll();
     }
 
+    public boolean isMaKhoanThuExists(String maKhoanThu) {
+        return repository.isMaKhoanThuExists(maKhoanThu);
+    }
+
     public boolean createFee(KhoanThu khoanThu) {
         if (khoanThu.getMaKhoanThu() == null || khoanThu.getMaKhoanThu().trim().isEmpty()) {
             throw new IllegalArgumentException("Mã khoản thu không được để trống");
