@@ -10,7 +10,8 @@ public class DBConnection {
     private static final String PASSWORD = "";
     private static Connection connection = null;
 
-    private DBConnection() {}
+    private DBConnection() {
+    }
 
     public static Connection getConnection() throws SQLException {
         if (connection == null || connection.isClosed()) {
