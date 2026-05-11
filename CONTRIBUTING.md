@@ -1,0 +1,21 @@
+# QUY ĐỊNH LÀM VIỆC NHÓM & GIT WORKFLOW
+
+## 1. Quy trình dùng Git (BẮT BUỘC)
+1. **Tuyệt đối KHÔNG push thẳng lên nhánh `main`.** Nhánh `main` chỉ chứa code hoàn chỉnh, chạy không lỗi.
+2. Khi bắt đầu làm 1 tính năng mới (Ví dụ: Làm màn hình Login):
+   * Từ nhánh `main`, tạo nhánh mới: `git checkout -b feature/login`
+   * Code và commit trên nhánh này: `git commit -m "Thiết kế UI Login"`
+   * Đẩy nhánh lên Github: `git push origin feature/login`
+   * Tạo **Pull Request (PR)** trên GitHub. Báo cho Leader review.
+
+## 2. Quy tắc viết Code (Coding Convention - Java)
+*   **Tên Class/Model:** Viết hoa chữ cái đầu (PascalCase). VD: `KhoanThuModel`, `LoginController`.
+*   **Tên biến/Hàm:** Viết thường chữ cái đầu (camelCase). VD: `maKhoanThu`, `tinhTongTien()`.
+*   **Comment Code:** Sử dụng `/** Javadoc */` trước các hàm quan trọng để giải thích chức năng của hàm đó.
+
+## 3. Quy tắc đặt tên nhánh (Naming Convention)
+*   **các em đặt tên nhánh theo cấu trúc:** <loại-nhánh>/<tên-công-việc>
+*   **VÍ DỤ:** 
+*    Tạo tính năng mới: feature/login, feature/them-khoan-thu, feature/tao-database
+*    Sửa lỗi bug: bugfix/loi-tinh-tien, bugfix/sai-giao-dien
+*   **(Lưu ý: Tên nhánh viết thường, không dấu, cách nhau bằng dấu gạch ngang).**

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bluemoon.controllers.LoginController" prefWidth="400.0" prefHeight="300.0" style="-fx-background-color: #f4f4f4;">
+    <padding>
+        <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+    </padding>
+
+    <Label text="ĐĂNG NHẬP BLUEMOON" textFill="#2c3e50">
+        <font>
+            <Font name="System Bold" size="24.0" />
+        </font>
+    </Label>
+
+    <VBox spacing="5.0">
+        <Label text="Tên đăng nhập:" />
+        <TextField fx:id="txtUsername" promptText="Nhập tên đăng nhập..." />
+    </VBox>
+
+    <VBox spacing="5.0">
+        <Label text="Mật khẩu:" />
+        <PasswordField fx:id="txtPassword" promptText="Nhập mật khẩu..." />
+    </VBox>
+
+    <Button defaultButton="true" mnemonicParsing="false" onAction="#handleLogin" prefWidth="150.0" text="Đăng nhập" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10px;" />
+</VBox>

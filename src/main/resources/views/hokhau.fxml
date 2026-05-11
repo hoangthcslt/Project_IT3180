@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox prefHeight="600.0" prefWidth="700.0" spacing="10.0" style="-fx-background-color: #ffffff; -fx-padding: 20px;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bluemoon.controllers.HouseholdController">
+   <Label text="QUẢN LÝ HỘ KHẨU" textFill="#2c3e50">
+      <font>
+         <Font name="System Bold" size="20.0" />
+      </font>
+   </Label>
+   
+   <VBox style="-fx-border-color: #bdc3c7; -fx-border-radius: 5px; -fx-padding: 15px;" spacing="10">
+      <Label text="Thêm Hộ Khẩu Mới">
+         <font>
+            <Font name="System Bold" size="14.0" />
+         </font>
+      </Label>
+      <GridPane hgap="15.0" vgap="10.0">
+         <Label text="Mã hộ khẩu:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+         <TextField fx:id="txtMaHoKhau" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+         
+         <Label text="Tên chủ hộ:" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+         <TextField fx:id="txtTenChuHo" GridPane.columnIndex="3" GridPane.rowIndex="0" />
+         
+         <Label text="Diện tích (m2):" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+         <TextField fx:id="txtDienTich" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+         
+         <Label text="Ngày lập:" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+         <DatePicker fx:id="dpNgayLap" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+      </GridPane>
+      <HBox alignment="CENTER_RIGHT" spacing="10">
+          <Button mnemonicParsing="false" onAction="#handleAdd" style="-fx-background-color: #27ae60; -fx-text-fill: white;" text="Thêm mới" />
+          <Button mnemonicParsing="false" onAction="#handleClear" style="-fx-background-color: #7f8c8d; -fx-text-fill: white;" text="Làm lại" />
+      </HBox>
+   </VBox>
+
+   <TableView fx:id="tableHoKhau" VBox.vgrow="ALWAYS">
+     <columns>
+       <TableColumn fx:id="colId" prefWidth="50.0" text="ID" />
+       <TableColumn fx:id="colMaHoKhau" prefWidth="100.0" text="Mã Hộ Khẩu" />
+       <TableColumn fx:id="colTenChuHo" prefWidth="200.0" text="Tên Chủ Hộ" />
+       <TableColumn fx:id="colDienTich" prefWidth="100.0" text="Diện Tích" />
+       <TableColumn fx:id="colNgayLap" prefWidth="150.0" text="Ngày Lập" />
+     </columns>
+   </TableView>
+</VBox>
