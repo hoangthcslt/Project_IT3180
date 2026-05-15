@@ -16,6 +16,10 @@ public class ResidentService {
         return repository.findByHoKhauId(hoKhauId);
     }
 
+    public List<NhanKhau> getAllResidents() {
+        return repository.findAll();
+    }
+
     public boolean addResident(NhanKhau nhanKhau) {
         if (nhanKhau.getHoTen() == null || nhanKhau.getHoTen().trim().isEmpty()) {
             throw new IllegalArgumentException("Họ tên nhân khẩu không được để trống");

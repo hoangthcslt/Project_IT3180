@@ -37,6 +37,32 @@ public class ResidentRepository {
         }
         return list;
     }
+    public List<NhanKhau> findAll() {
+        List<NhanKhau> list = new ArrayList<>();
+        String sql = "SELECT * FROM nhan_khau";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            while (rs.next()) {
+                NhanKhau nk = new NhanKhau(
+                        rs.getInt("id"),
+                        rs.getInt("ho_khau_id"),
+                        rs.getString("ho_ten"),
+                        rs.getString("cccd"),
+                        rs.getDate("ngay_sinh") != null ? rs.getDate("ngay_sinh").toLocalDate() : null,
+                        rs.getString("gioi_tinh"),
+                        rs.getString("quan_he"),
+                        rs.getString("trang_thai")
+                );
+                list.add(nk);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 
     public boolean insert(NhanKhau nhanKhau) {
         String sql = "INSERT INTO nhan_khau (ho_khau_id, ho_ten, cccd, ngay_sinh, gioi_tinh, quan_he, trang_thai) VALUES (?, ?, ?, ?, ?, ?, ?)";

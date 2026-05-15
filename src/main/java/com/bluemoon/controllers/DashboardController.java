@@ -43,7 +43,7 @@ public class DashboardController {
 
     @FXML
     void handleNhanKhau(ActionEvent event) {
-        // Todo: Implement Nhân khẩu feature
+        loadView("nhankhau.fxml");
     }
 
     @FXML
