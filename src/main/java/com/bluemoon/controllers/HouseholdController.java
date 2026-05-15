@@ -44,6 +44,14 @@ public class HouseholdController {
         colNgayLap.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getNgayLap()));
 
         loadData();
+        
+        // Validation for Diện tích: only allow numbers and decimal points
+        txtDienTich.setTextFormatter(new TextFormatter<>(change -> {
+            if (change.getControlNewText().matches("\\d*\\.?\\d*")) {
+                return change;
+            }
+            return null;
+        }));
     }
 
     private void loadData() {
@@ -65,6 +73,11 @@ public class HouseholdController {
                 return;
             }
 
+            if (householdService.isMaHoKhauExists(ma)) {
+                showAlert(Alert.AlertType.WARNING, "Cảnh báo", "Mã hộ khẩu này đã tồn tại trong hệ thống!");
+                return;
+            }
+
             BigDecimal dienTich = new BigDecimal(dienTichStr);
 
             HoKhau hk = new HoKhau(0, ma, ten, dienTich, ngayLap);
@@ -75,7 +88,7 @@ public class HouseholdController {
                 loadData();
                 handleClear(null);
             } else {
-                showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể thêm hộ khẩu (Có thể trùng mã).");
+                showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể thêm hộ khẩu.");
             }
 
         } catch (NumberFormatException e) {

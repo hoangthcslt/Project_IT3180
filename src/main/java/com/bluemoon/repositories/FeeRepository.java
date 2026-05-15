@@ -36,6 +36,22 @@ public class FeeRepository {
         return list;
     }
 
+    public boolean isMaKhoanThuExists(String maKhoanThu) {
+        String sql = "SELECT COUNT(*) FROM khoan_thu WHERE ma_khoan_thu = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, maKhoanThu);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public boolean insert(KhoanThu khoanThu) {
         String sql = "INSERT INTO khoan_thu (ma_khoan_thu, ten_khoan_thu, loai_phi, don_gia, ngay_tao, ghi_chu) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();

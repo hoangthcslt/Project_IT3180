@@ -52,6 +52,14 @@ public class FeeController {
         cbLoaiPhi.getSelectionModel().selectFirst();
         
         loadData();
+
+        // Validation for Đơn giá: only allow numbers and decimal points
+        txtDonGia.setTextFormatter(new TextFormatter<>(change -> {
+            if (change.getControlNewText().matches("\\d*\\.?\\d*")) {
+                return change;
+            }
+            return null;
+        }));
     }
 
     private void loadData() {
@@ -75,6 +83,11 @@ public class FeeController {
                 return;
             }
 
+            if (feeService.isMaKhoanThuExists(ma)) {
+                showAlert(Alert.AlertType.WARNING, "Cảnh báo", "Mã khoản thu này đã tồn tại trong hệ thống!");
+                return;
+            }
+
             BigDecimal donGia = new BigDecimal(donGiaStr);
 
             KhoanThu kt = new KhoanThu(0, ma, ten, loai, donGia, ngayTao, ghiChu);
@@ -85,7 +98,7 @@ public class FeeController {
                 loadData();
                 handleClear(null);
             } else {
-                showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể tạo đợt thu (Có thể trùng mã).");
+                showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể tạo đợt thu.");
             }
 
         } catch (NumberFormatException e) {
