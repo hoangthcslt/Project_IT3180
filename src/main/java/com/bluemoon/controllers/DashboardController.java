@@ -53,11 +53,11 @@ public class DashboardController {
 
     @FXML
     void handleNopTien(ActionEvent event) {
-        // Todo: Implement Nộp tiền feature
+        loadView("thanhtoan.fxml");
     }
 
     @FXML
     void handleThongKe(ActionEvent event) {
-        // Todo: Implement Thống kê feature
+        loadView("thongke.fxml");
     }
 }

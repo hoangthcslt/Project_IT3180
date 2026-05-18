@@ -20,6 +20,11 @@ public class HouseholdService {
         return repository.isMaHoKhauExists(maHoKhau);
     }
 
+    public HoKhau findByMaHoKhau(String maHoKhau) {
+        if (maHoKhau == null || maHoKhau.trim().isEmpty()) return null;
+        return repository.findByMaHoKhau(maHoKhau.trim());
+    }
+
     public boolean addHousehold(HoKhau hoKhau) {
         // Có thể thêm business logic validation ở đây nếu cần
         if (hoKhau.getMaHoKhau() == null || hoKhau.getMaHoKhau().trim().isEmpty()) {
