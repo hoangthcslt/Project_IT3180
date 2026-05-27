@@ -27,7 +27,23 @@ public class FeeService {
         }
         return repository.insert(khoanThu);
     }
-    
+
+    public boolean updateFee(KhoanThu khoanThu) {
+        if (khoanThu.getMaKhoanThu() == null || khoanThu.getMaKhoanThu().trim().isEmpty()) {
+            throw new IllegalArgumentException("Mã khoản thu không được để trống");
+        }
+        return repository.update(khoanThu);
+    }
+
+    public boolean deleteFee(int id) {
+        return repository.delete(id);
+    }
+
+    public List<KhoanThu> searchFees(String ma, String ten, String loai, String donGiaStr,
+            java.time.LocalDate ngayTao) {
+        return repository.search(ma, ten, loai, donGiaStr, ngayTao);
+    }
+
     public BigDecimal calculateDebt(int hoKhauId, int khoanThuId) {
         return repository.calculateDebt(hoKhauId, khoanThuId);
     }
