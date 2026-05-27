@@ -21,7 +21,8 @@ public class HouseholdService {
     }
 
     public HoKhau findByMaHoKhau(String maHoKhau) {
-        if (maHoKhau == null || maHoKhau.trim().isEmpty()) return null;
+        if (maHoKhau == null || maHoKhau.trim().isEmpty())
+            return null;
         return repository.findByMaHoKhau(maHoKhau.trim());
     }
 
@@ -31,5 +32,21 @@ public class HouseholdService {
             throw new IllegalArgumentException("Mã hộ khẩu không được để trống");
         }
         return repository.insert(hoKhau);
+    }
+
+    public boolean updateHousehold(HoKhau hoKhau) {
+        if (hoKhau.getMaHoKhau() == null || hoKhau.getMaHoKhau().trim().isEmpty()) {
+            throw new IllegalArgumentException("Mã hộ khẩu không được để trống");
+        }
+        return repository.update(hoKhau);
+    }
+
+    public boolean deleteHousehold(int id) {
+        return repository.delete(id);
+    }
+
+    public List<HoKhau> searchHouseholds(String maHoKhau, String tenChuHo, String dienTich,
+            java.time.LocalDate ngayLap) {
+        return repository.search(maHoKhau, tenChuHo, dienTich, ngayLap);
     }
 }
