@@ -30,6 +30,11 @@ public class HouseholdController {
     @FXML
     private DatePicker dpNgayLap;
     @FXML
+    private Button btnAddHousehold;
+    @FXML
+    private Button btnResetAdd;
+
+    @FXML
     private TextField txtSearchMaHoKhau;
     @FXML
     private TextField txtSearchTenChuHo;
@@ -37,10 +42,6 @@ public class HouseholdController {
     private TextField txtSearchDienTich;
     @FXML
     private DatePicker dpSearchNgayLap;
-    @FXML
-    private Button btnAddHousehold;
-    @FXML
-    private Button btnResetAdd;
     @FXML
     private Button btnSearchHousehold;
     @FXML
@@ -93,6 +94,7 @@ public class HouseholdController {
             }
             return null;
         }));
+        
         setupDashboardButton(btnAddHousehold, "#27ae60", "#219653");
         setupDashboardButton(btnSearchHousehold, "#27ae60", "#219653");
         setupDashboardButton(btnResetAdd, "#7f8c8d", "#6f7c7d");

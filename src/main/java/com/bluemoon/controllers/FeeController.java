@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import javafx.geometry.Pos;
 
 public class FeeController {
 
@@ -99,36 +100,7 @@ public class FeeController {
         }));
 
         // Actions column
-        colActions.setCellFactory(param -> new TableCell<>() {
-            private final Button editButton = new Button("Sửa");
-            private final Button deleteButton = new Button("Xóa");
-            private final HBox box = new HBox(8, editButton, deleteButton);
-
-            {
-                editButton.setStyle(
-                        "-fx-background-color: #2f80ed; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 6 12;");
-                deleteButton.setStyle(
-                        "-fx-background-color: #eb5757; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 6 12;");
-                editButton.setOnAction(event -> {
-                    KhoanThu item = getTableView().getItems().get(getIndex());
-                    showEditDialog(item);
-                });
-                deleteButton.setOnAction(event -> {
-                    KhoanThu item = getTableView().getItems().get(getIndex());
-                    handleDelete(item);
-                });
-            }
-
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else {
-                    setGraphic(box);
-                }
-            }
-        });
+        colActions.setCellFactory(col -> actionCell());
     }
 
     private void loadData() {
@@ -293,5 +265,38 @@ public class FeeController {
         alert.setHeaderText(null);
         alert.setContentText(content);
         alert.showAndWait();
+    }
+
+    private TableCell<KhoanThu, Void> actionCell() {
+        return new TableCell<>() {
+            private final Button editButton = createActionButton("✎");
+            private final Button deleteButton = createActionButton("🗑");
+            private final HBox box = new HBox(8, editButton, deleteButton);
+
+            {
+                box.setAlignment(Pos.CENTER);
+                editButton.setOnAction(event -> showEditDialog(getTableView().getItems().get(getIndex())));
+                deleteButton.setOnAction(event -> handleDelete(getTableView().getItems().get(getIndex())));
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : box);
+                setAlignment(Pos.CENTER);
+            }
+        };
+    }
+
+    private Button createActionButton(String content) {
+        Button button = new Button(content);
+        button.setMinSize(34, 30);
+        button.setStyle(
+                "-fx-background-color: #eef3f8; -fx-background-radius: 7; -fx-font-weight: bold; -fx-cursor: hand;");
+        button.setOnMouseEntered(event -> button.setStyle(
+                "-fx-background-color: #d9e7f5; -fx-background-radius: 7; -fx-font-weight: bold; -fx-cursor: hand;"));
+        button.setOnMouseExited(event -> button.setStyle(
+                "-fx-background-color: #eef3f8; -fx-background-radius: 7; -fx-font-weight: bold; -fx-cursor: hand;"));
+        return button;
     }
 }

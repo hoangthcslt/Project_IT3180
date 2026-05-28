@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!-- Redesigned by Antigravity -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.DatePicker?>
@@ -9,102 +10,104 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Priority?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox prefHeight="640.0" prefWidth="900.0" spacing="18.0" style="-fx-background-color: #f4f7fb;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bluemoon.controllers.HouseholdController">
+<VBox prefHeight="650.0" prefWidth="950.0" spacing="15.0" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bluemoon.controllers.HouseholdController">
    <padding>
-      <Insets bottom="24.0" left="24.0" right="24.0" top="24.0" />
+      <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
    </padding>
 
-   <VBox spacing="4.0">
-      <Label text="Quản lý hộ khẩu" style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #243447;" />
-      <Label text="Thêm, tìm kiếm và quản trị dữ liệu hộ khẩu trong chung cư." style="-fx-font-size: 14px; -fx-text-fill: #6b7a8f;" />
-   </VBox>
+   <Label text="QUẢN LÝ HỘ KHẨU" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-padding: 0 0 5 0;" />
 
-   <TabPane tabClosingPolicy="UNAVAILABLE" prefWidth="860.0" prefHeight="360.0" style="-fx-background-color: transparent; -fx-padding: 0 0 12 0;">
+   <TabPane tabClosingPolicy="UNAVAILABLE" style="-fx-background-color: transparent;">
       <tabs>
          <Tab text="Thêm hộ khẩu">
-            <VBox spacing="16.0" prefHeight="320.0" prefWidth="840.0" style="-fx-background-color: white; -fx-background-radius: 14; -fx-border-color: #dfe7f1; -fx-border-radius: 14; -fx-effect: dropshadow(gaussian, rgba(35, 52, 72, 0.08), 15, 0, 0, 6);">
+            <VBox spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.02), 6, 0, 0, 1);">
                <padding>
-                  <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                  <Insets bottom="15.0" left="20.0" right="20.0" top="15.0" />
                </padding>
-               <GridPane hgap="16.0" vgap="16.0" prefWidth="800.0">
+               <GridPane hgap="20.0" vgap="10.0">
                   <columnConstraints>
-                     <ColumnConstraints minWidth="120.0" halignment="RIGHT" percentWidth="20.0" />
-                     <ColumnConstraints hgrow="ALWAYS" minWidth="220.0" fillWidth="true" percentWidth="30.0" />
-                     <ColumnConstraints minWidth="120.0" halignment="RIGHT" percentWidth="20.0" />
-                     <ColumnConstraints hgrow="ALWAYS" minWidth="220.0" fillWidth="true" percentWidth="30.0" />
+                     <ColumnConstraints percentWidth="15.0" halignment="RIGHT" />
+                     <ColumnConstraints percentWidth="35.0" hgrow="ALWAYS" />
+                     <ColumnConstraints percentWidth="15.0" halignment="RIGHT" />
+                     <ColumnConstraints percentWidth="35.0" hgrow="ALWAYS" />
                   </columnConstraints>
-                  <Label text="Mã hộ khẩu" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                  <TextField fx:id="txtMaHoKhau" maxWidth="Infinity" style="-fx-background-radius: 8; -fx-padding: 8 10;" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS" />
+                  
+                  <Label text="Mã hộ khẩu:" style="-fx-text-fill: #334155; -fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                  <TextField fx:id="txtMaHoKhau" maxWidth="Infinity" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 6 10;" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
-                  <Label text="Tên chủ hộ" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;" GridPane.columnIndex="2" GridPane.rowIndex="0" />
-                  <TextField fx:id="txtTenChuHo" maxWidth="Infinity" style="-fx-background-radius: 8; -fx-padding: 8 10;" GridPane.columnIndex="3" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS" />
+                  <Label text="Tên chủ hộ:" style="-fx-text-fill: #334155; -fx-font-weight: bold;" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                  <TextField fx:id="txtTenChuHo" maxWidth="Infinity" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 6 10;" GridPane.columnIndex="3" GridPane.rowIndex="0" />
 
-                  <Label text="Diện tích (m2)" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                  <TextField fx:id="txtDienTich" maxWidth="Infinity" style="-fx-background-radius: 8; -fx-padding: 8 10;" GridPane.columnIndex="1" GridPane.rowIndex="1" GridPane.hgrow="ALWAYS" />
+                  <Label text="Diện tích (m2):" style="-fx-text-fill: #334155; -fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                  <TextField fx:id="txtDienTich" maxWidth="Infinity" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 6 10;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
-                  <Label text="Ngày lập" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-                  <DatePicker fx:id="dpNgayLap" maxWidth="Infinity" style="-fx-background-radius: 8;" GridPane.columnIndex="3" GridPane.rowIndex="1" GridPane.hgrow="ALWAYS" />
+                  <Label text="Ngày lập:" style="-fx-text-fill: #334155; -fx-font-weight: bold;" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                  <DatePicker fx:id="dpNgayLap" maxWidth="Infinity" style="-fx-background-color: transparent; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6;" GridPane.columnIndex="3" GridPane.rowIndex="1" />
                </GridPane>
-               <HBox alignment="CENTER_RIGHT" spacing="14.0" style="-fx-padding: 8 0 12 0;">
-                  <Button fx:id="btnResetAdd" minWidth="96.0" mnemonicParsing="false" onAction="#handleClear" text="Reset" />
-                  <Button fx:id="btnAddHousehold" minWidth="96.0" mnemonicParsing="false" onAction="#handleAdd" text="Thêm" />
+               <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                  <padding>
+                     <Insets bottom="5.0" top="5.0" />
+                  </padding>
+                  <Button fx:id="btnResetAdd" mnemonicParsing="false" onAction="#handleClear" text="Reset" style="-fx-background-color: #64748b; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 18; -fx-background-radius: 6; -fx-cursor: hand;" />
+                  <Button fx:id="btnAddHousehold" mnemonicParsing="false" onAction="#handleAdd" text="Thêm" style="-fx-background-color: #22c55e; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 18; -fx-background-radius: 6; -fx-cursor: hand;" />
                </HBox>
             </VBox>
          </Tab>
-
          <Tab text="Tìm kiếm">
-            <VBox spacing="16.0" prefHeight="240.0" style="-fx-background-color: white; -fx-background-radius: 14; -fx-border-color: #dfe7f1; -fx-border-radius: 14; -fx-effect: dropshadow(gaussian, rgba(35, 52, 72, 0.08), 15, 0, 0, 6);">
+            <VBox spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.02), 6, 0, 0, 1);">
                <padding>
-                  <Insets bottom="18.0" left="20.0" right="20.0" top="20.0" />
+                  <Insets bottom="15.0" left="20.0" right="20.0" top="15.0" />
                </padding>
-               <GridPane hgap="16.0" vgap="16.0">
+               <GridPane hgap="20.0" vgap="10.0">
                   <columnConstraints>
-                     <ColumnConstraints minWidth="110.0" halignment="RIGHT" />
-                     <ColumnConstraints hgrow="ALWAYS" minWidth="180.0" />
-                     <ColumnConstraints minWidth="110.0" halignment="RIGHT" />
-                     <ColumnConstraints hgrow="ALWAYS" minWidth="180.0" />
+                     <ColumnConstraints percentWidth="15.0" halignment="RIGHT" />
+                     <ColumnConstraints percentWidth="35.0" hgrow="ALWAYS" />
+                     <ColumnConstraints percentWidth="15.0" halignment="RIGHT" />
+                     <ColumnConstraints percentWidth="35.0" hgrow="ALWAYS" />
                   </columnConstraints>
-                  <Label text="Mã hộ khẩu" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                  <TextField fx:id="txtSearchMaHoKhau" style="-fx-background-radius: 8; -fx-padding: 8 10;" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                  
+                  <Label text="Mã hộ khẩu:" style="-fx-text-fill: #334155; -fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                  <TextField fx:id="txtSearchMaHoKhau" maxWidth="Infinity" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 6 10;" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
-                  <Label text="Tên chủ hộ" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;" GridPane.columnIndex="2" GridPane.rowIndex="0" />
-                  <TextField fx:id="txtSearchTenChuHo" style="-fx-background-radius: 8; -fx-padding: 8 10;" GridPane.columnIndex="3" GridPane.rowIndex="0" />
+                  <Label text="Tên chủ hộ:" style="-fx-text-fill: #334155; -fx-font-weight: bold;" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                  <TextField fx:id="txtSearchTenChuHo" maxWidth="Infinity" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 6 10;" GridPane.columnIndex="3" GridPane.rowIndex="0" />
 
-                  <Label text="Diện tích" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                  <TextField fx:id="txtSearchDienTich" style="-fx-background-radius: 8; -fx-padding: 8 10;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                  <Label text="Diện tích (m2):" style="-fx-text-fill: #334155; -fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                  <TextField fx:id="txtSearchDienTich" maxWidth="Infinity" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 6 10;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
-                  <Label text="Ngày lập" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-                  <DatePicker fx:id="dpSearchNgayLap" style="-fx-background-radius: 8;" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                  <Label text="Ngày lập:" style="-fx-text-fill: #334155; -fx-font-weight: bold;" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                  <DatePicker fx:id="dpSearchNgayLap" maxWidth="Infinity" style="-fx-background-color: transparent; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6;" GridPane.columnIndex="3" GridPane.rowIndex="1" />
                </GridPane>
-               <HBox alignment="CENTER_RIGHT" spacing="14.0" style="-fx-padding: 4 0 0 0;">
-                  <Button fx:id="btnResetSearch" minWidth="96.0" mnemonicParsing="false" onAction="#handleResetSearch" text="Reset" />
-                  <Button fx:id="btnSearchHousehold" minWidth="96.0" mnemonicParsing="false" onAction="#handleSearch" text="Tìm kiếm" />
+               <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                  <padding>
+                     <Insets bottom="5.0" top="5.0" />
+                  </padding>
+                  <Button fx:id="btnResetSearch" mnemonicParsing="false" onAction="#handleResetSearch" text="Reset" style="-fx-background-color: #64748b; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 18; -fx-background-radius: 6; -fx-cursor: hand;" />
+                  <Button fx:id="btnSearchHousehold" mnemonicParsing="false" onAction="#handleSearch" text="Tìm kiếm" style="-fx-background-color: #22c55e; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 18; -fx-background-radius: 6; -fx-cursor: hand;" />
                </HBox>
             </VBox>
          </Tab>
       </tabs>
    </TabPane>
 
-   <VBox spacing="10.0" prefHeight="300.0" style="-fx-background-color: white; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(35, 52, 72, 0.12), 14, 0, 0, 5);">
+   <VBox spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.02), 6, 0, 0, 1);" VBox.vgrow="ALWAYS">
       <padding>
-         <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
+         <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
       </padding>
-      <Label text="Danh sách hộ khẩu" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #243447;" />
-      <TableView fx:id="tableHoKhau" VBox.vgrow="ALWAYS" style="-fx-background-radius: 8; -fx-border-color: #dfe7f1; -fx-border-radius: 8;">
+      <Label text="Danh sách hộ khẩu" style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1e293b;" />
+      <TableView fx:id="tableHoKhau" VBox.vgrow="ALWAYS" style="-fx-background-color: white; -fx-background-radius: 6; -fx-border-color: #cbd5e1; -fx-border-radius: 6;">
          <columns>
-            <TableColumn fx:id="colId" prefWidth="60.0" text="ID" />
-            <TableColumn fx:id="colMaHoKhau" prefWidth="130.0" text="Mã hộ khẩu" />
-            <TableColumn fx:id="colTenChuHo" prefWidth="220.0" text="Tên chủ hộ" />
+            <TableColumn fx:id="colId" prefWidth="60.0" style="-fx-alignment: CENTER;" text="ID" />
+            <TableColumn fx:id="colMaHoKhau" prefWidth="140.0" text="Mã hộ khẩu" />
+            <TableColumn fx:id="colTenChuHo" prefWidth="240.0" text="Tên chủ hộ" />
             <TableColumn fx:id="colDienTich" prefWidth="120.0" text="Diện tích" />
-            <TableColumn fx:id="colNgayLap" prefWidth="140.0" text="Ngày lập" />
-            <TableColumn fx:id="colHoatDong" prefWidth="120.0" text="Hoạt động" />
+            <TableColumn fx:id="colNgayLap" prefWidth="140.0" style="-fx-alignment: CENTER;" text="Ngày lập" />
+            <TableColumn fx:id="colHoatDong" prefWidth="140.0" style="-fx-alignment: CENTER;" text="Hoạt động" />
          </columns>
       </TableView>
    </VBox>
