@@ -5,6 +5,8 @@ import com.bluemoon.models.HoKhau;
 import com.bluemoon.models.KhoanThu;
 import com.bluemoon.models.NhanKhau;
 import com.bluemoon.models.PaymentStatusView;
+import com.bluemoon.repositories.UserRepository;
+import org.mindrot.jbcrypt.BCrypt;
 import com.bluemoon.services.FeeService;
 import com.bluemoon.services.HouseholdService;
 import com.bluemoon.services.PaymentService;
@@ -22,6 +24,16 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.PasswordField;
+import javafx.scene.layout.GridPane;
+import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.shape.Circle;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.ImagePattern;
+import javafx.scene.image.Image;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
@@ -46,7 +58,7 @@ import java.util.function.Consumer;
 public class DashboardController {
 
     @FXML
-    private Label lblWelcome;
+    private MenuButton menuUser;
 
     @FXML
     private BorderPane mainBorderPane;
@@ -88,7 +100,19 @@ public class DashboardController {
         refreshDashboardStats();
         User currentUser = SessionManager.getInstance().getCurrentUser();
         if (currentUser != null) {
-            lblWelcome.setText("Xin chào, " + currentUser.getUsername() + " (" + currentUser.getRole() + ")");
+            Circle avatar = new Circle(14);
+            try {
+                Image img = new Image(getClass().getResourceAsStream("/images/avatar.png"));
+                avatar.setFill(new ImagePattern(img));
+            } catch (Exception e) {
+                avatar.setFill(Color.web("#ecf0f1"));
+            }
+            Label nameLabel = new Label("  " + currentUser.getUsername());
+            nameLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;");
+            HBox graphicBox = new HBox(5, avatar, nameLabel);
+            graphicBox.setAlignment(Pos.CENTER_LEFT);
+            menuUser.setGraphic(graphicBox);
+            menuUser.setText("");
         }
 
     }
@@ -427,6 +451,78 @@ public class DashboardController {
     }
 
     @FXML
+    void handleChangePassword(ActionEvent event) {
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle("Đổi mật khẩu");
+        dialog.setHeaderText("Nhập mật khẩu mới cho tài khoản của bạn.");
+
+        ButtonType saveButtonType = new ButtonType("Lưu", ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 50, 10, 10));
+
+        PasswordField currentPassword = new PasswordField();
+        currentPassword.setPromptText("Mật khẩu hiện tại");
+        PasswordField newPassword = new PasswordField();
+        newPassword.setPromptText("Mật khẩu mới");
+        PasswordField confirmPassword = new PasswordField();
+        confirmPassword.setPromptText("Xác nhận mật khẩu mới");
+
+        grid.add(new Label("Mật khẩu hiện tại:"), 0, 0);
+        grid.add(currentPassword, 1, 0);
+        grid.add(new Label("Mật khẩu mới:"), 0, 1);
+        grid.add(newPassword, 1, 1);
+        grid.add(new Label("Xác nhận mật khẩu:"), 0, 2);
+        grid.add(confirmPassword, 1, 2);
+
+        dialog.getDialogPane().setContent(grid);
+        
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == saveButtonType) {
+                if (newPassword.getText().isEmpty()) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setContentText("Mật khẩu mới không được để trống!");
+                    alert.showAndWait();
+                    return null;
+                }
+                if (newPassword.getText().equals(confirmPassword.getText())) {
+                    return newPassword.getText();
+                } else {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setContentText("Mật khẩu xác nhận không khớp!");
+                    alert.showAndWait();
+                    return null;
+                }
+            }
+            return null;
+        });
+
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(password -> {
+            User user = SessionManager.getInstance().getCurrentUser();
+            if (user != null) {
+                String hashed = BCrypt.hashpw(password, BCrypt.gensalt());
+                UserRepository repo = new UserRepository();
+                if (repo.updatePassword(user.getId(), hashed)) {
+                    user.setPassword(hashed); // Cập nhật session
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Thành công");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Mật khẩu đã được cập nhật thành công vào CSDL!");
+                    alert.showAndWait();
+                } else {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setContentText("Lỗi khi lưu vào cơ sở dữ liệu.");
+                    alert.showAndWait();
+                }
+            }
+        });
+    }
+
+    @FXML
     void handleLogout(ActionEvent event) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Xác nhận");
@@ -442,8 +538,8 @@ public class DashboardController {
             try {
                 SessionManager.getInstance().clearSession();
                 Parent root = FXMLLoader.load(getClass().getResource("/views/login.fxml"));
-                Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-                stage.setScene(new Scene(root, 400, 300));
+                Stage stage = (Stage) mainBorderPane.getScene().getWindow();
+                stage.setScene(new Scene(root));
                 stage.centerOnScreen();
                 stage.setTitle("Hệ thống quản lý chung cư BlueMoon - Đăng nhập");
                 stage.show();

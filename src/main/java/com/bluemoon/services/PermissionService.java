@@ -81,7 +81,24 @@ public class PermissionService {
         repository.updateUserAndGroup(userId, username.trim(), role.trim(), groupId);
     }
 
-    public void removeUserFromGroups(int userId) {
-        repository.removeUserFromGroups(userId);
+    public void insertUserAndGroup(String username, String password, String role, int groupId) {
+        if (username == null || username.trim().isEmpty()) {
+            throw new IllegalArgumentException("Username khong duoc de trong.");
+        }
+        if (password == null || password.trim().isEmpty()) {
+            throw new IllegalArgumentException("Password khong duoc de trong.");
+        }
+        if (role == null || role.trim().isEmpty()) {
+            throw new IllegalArgumentException("Vai tro khong duoc de trong.");
+        }
+        if (groupId <= 0) {
+            throw new IllegalArgumentException("Nhom khong hop le.");
+        }
+
+        repository.insertUserAndGroup(username.trim(), password.trim(), role.trim(), groupId);
+    }
+
+    public void deleteUser(int userId) {
+        repository.deleteUser(userId);
     }
 }

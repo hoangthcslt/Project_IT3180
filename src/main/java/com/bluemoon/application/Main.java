@@ -12,7 +12,7 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
         Parent root = FXMLLoader.load(getClass().getResource("/views/login.fxml"));
         primaryStage.setTitle("Hệ thống quản lý chung cư BlueMoon - Đăng nhập");
-        primaryStage.setScene(new Scene(root, 400, 300));
+        primaryStage.setScene(new Scene(root));
         primaryStage.centerOnScreen();
         primaryStage.show();
     }
