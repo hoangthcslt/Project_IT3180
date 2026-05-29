@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!-- Redesigned by Antigravity -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
@@ -13,100 +14,102 @@
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
 
-<VBox prefHeight="760.0" prefWidth="940.0" spacing="18.0" style="-fx-background-color: #f4f7fb; -fx-padding: 20px;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bluemoon.controllers.ThongBaoController">
-    <Label text="Quản lý thông báo" textFill="#243447">
-        <font>
-            <Font name="System Bold" size="22.0" />
-        </font>
-    </Label>
-    <Label text="Quản lý các thông báo và tài liệu tiện ích trong hệ thống." style="-fx-font-size: 14px; -fx-text-fill: #6b7a8f;" />
+<VBox prefHeight="650.0" prefWidth="950.0" spacing="15.0" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bluemoon.controllers.ThongBaoController">
+   <padding>
+      <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+   </padding>
 
-    <TabPane tabClosingPolicy="UNAVAILABLE" style="-fx-background-color: transparent;">
-        <tabs>
-            <Tab text="Thêm thông báo">
-                <VBox spacing="16.0" style="-fx-background-color: white; -fx-background-radius: 14; -fx-border-color: #dfe7f1; -fx-border-radius: 14; -fx-effect: dropshadow(gaussian, rgba(35, 52, 72, 0.08), 14, 0, 0, 6);">
-                    <padding>
-                        <Insets top="20.0" right="20.0" bottom="20.0" left="20.0" />
-                    </padding>
-                    <GridPane hgap="18.0" vgap="14.0">
-                        <columnConstraints>
-                            <ColumnConstraints minWidth="120.0" halignment="RIGHT" />
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="260.0" />
-                            <ColumnConstraints minWidth="120.0" halignment="RIGHT" />
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="260.0" />
-                        </columnConstraints>
+   <Label text="QUẢN LÝ TIỆN ÍCH" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-padding: 0 0 5 0;" />
 
-                        <Label text="Tên thông báo" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                        <TextField fx:id="txtTitle" style="-fx-background-radius: 8; -fx-padding: 8 10;" promptText="Nhập tên thông báo" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.columnSpan="3" />
+   <TabPane tabClosingPolicy="UNAVAILABLE" style="-fx-background-color: transparent;">
+      <tabs>
+         <Tab text="Thêm thông báo">
+            <VBox spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.02), 6, 0, 0, 1);">
+               <padding>
+                  <Insets bottom="15.0" left="20.0" right="20.0" top="15.0" />
+               </padding>
+               <GridPane hgap="20.0" vgap="10.0">
+                  <columnConstraints>
+                     <ColumnConstraints percentWidth="15.0" halignment="RIGHT" />
+                     <ColumnConstraints percentWidth="35.0" hgrow="ALWAYS" />
+                     <ColumnConstraints percentWidth="15.0" halignment="RIGHT" />
+                     <ColumnConstraints percentWidth="35.0" hgrow="ALWAYS" />
+                  </columnConstraints>
+                  
+                  <Label text="Tên thông báo:" style="-fx-text-fill: #334155; -fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                  <TextField fx:id="txtTitle" promptText="Nhập tên thông báo" maxWidth="Infinity" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 6 10;" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
-                        <Label text="File thông báo" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                        <HBox spacing="12.0" GridPane.columnIndex="1" GridPane.rowIndex="1" GridPane.columnSpan="3">
-                            <Button fx:id="btnChooseFile" mnemonicParsing="false" onAction="#handleChooseFile" text="Chọn file" style="-fx-background-color: #34495e; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 9 16; -fx-background-radius: 8;" />
-                            <Label fx:id="lblSelectedFile" text="Chưa chọn file" style="-fx-text-fill: #6b7a8f;" />
-                        </HBox>
+                  <Label text="Ngày ban hành:" style="-fx-text-fill: #334155; -fx-font-weight: bold;" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                  <DatePicker fx:id="dpNgayBanHanh" maxWidth="Infinity" style="-fx-background-color: transparent; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6;" GridPane.columnIndex="3" GridPane.rowIndex="0" />
 
-                        <Label text="Ngày ban hành" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                        <DatePicker fx:id="dpNgayBanHanh" style="-fx-background-radius: 8;" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                  <Label text="File đính kèm:" style="-fx-text-fill: #334155; -fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                  <HBox alignment="CENTER_LEFT" spacing="10.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                     <Button fx:id="btnChooseFile" mnemonicParsing="false" onAction="#handleChooseFile" text="Chọn file" style="-fx-background-color: #475569; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 6 14; -fx-background-radius: 6; -fx-cursor: hand;" />
+                     <Label fx:id="lblSelectedFile" text="Chưa chọn file" style="-fx-text-fill: #64748b;" />
+                  </HBox>
 
-                        <Label text="Trạng thái" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;" GridPane.columnIndex="2" GridPane.rowIndex="2" />
-                        <ComboBox fx:id="cbStatus" style="-fx-background-radius: 8;" GridPane.columnIndex="3" GridPane.rowIndex="2" />
-                    </GridPane>
+                  <Label text="Trạng thái:" style="-fx-text-fill: #334155; -fx-font-weight: bold;" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                  <ComboBox fx:id="cbStatus" maxWidth="Infinity" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 3 6;" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+               </GridPane>
+               <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                  <padding>
+                     <Insets bottom="5.0" top="5.0" />
+                  </padding>
+                  <Button fx:id="btnResetForm" mnemonicParsing="false" onAction="#handleResetForm" text="Reset" style="-fx-background-color: #64748b; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 18; -fx-background-radius: 6; -fx-cursor: hand;" />
+                  <Button fx:id="btnAddNotification" mnemonicParsing="false" onAction="#handleAddNotification" text="Thêm" style="-fx-background-color: #22c55e; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 18; -fx-background-radius: 6; -fx-cursor: hand;" />
+               </HBox>
+            </VBox>
+         </Tab>
+         <Tab text="Tìm kiếm">
+            <VBox spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.02), 6, 0, 0, 1);">
+               <padding>
+                  <Insets bottom="15.0" left="20.0" right="20.0" top="15.0" />
+               </padding>
+               <GridPane hgap="20.0" vgap="10.0">
+                  <columnConstraints>
+                     <ColumnConstraints percentWidth="15.0" halignment="RIGHT" />
+                     <ColumnConstraints percentWidth="35.0" hgrow="ALWAYS" />
+                     <ColumnConstraints percentWidth="15.0" halignment="RIGHT" />
+                     <ColumnConstraints percentWidth="35.0" hgrow="ALWAYS" />
+                  </columnConstraints>
+                  
+                  <Label text="Tên thông báo:" style="-fx-text-fill: #334155; -fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                  <TextField fx:id="txtSearchTitle" promptText="Nhập tên thông báo" maxWidth="Infinity" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 6 10;" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
-                    <HBox alignment="CENTER_RIGHT" spacing="14.0" style="-fx-padding: 4 0 0 0;">
-                        <Button fx:id="btnResetForm" mnemonicParsing="false" onAction="#handleResetForm" text="Reset" style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 9 16; -fx-background-radius: 8;" />
-                        <Button fx:id="btnAddNotification" mnemonicParsing="false" onAction="#handleAddNotification" text="Thêm" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 9 16; -fx-background-radius: 8;" />
-                    </HBox>
-                </VBox>
-            </Tab>
-            <Tab text="Tìm kiếm">
-                <VBox spacing="16.0" style="-fx-background-color: white; -fx-background-radius: 14; -fx-border-color: #dfe7f1; -fx-border-radius: 14; -fx-effect: dropshadow(gaussian, rgba(35, 52, 72, 0.08), 14, 0, 0, 6);">
-                    <padding>
-                        <Insets top="20.0" right="20.0" bottom="20.0" left="20.0" />
-                    </padding>
-                    <GridPane hgap="18.0" vgap="14.0">
-                        <columnConstraints>
-                            <ColumnConstraints minWidth="120.0" halignment="RIGHT" />
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="260.0" />
-                            <ColumnConstraints minWidth="120.0" halignment="RIGHT" />
-                            <ColumnConstraints hgrow="ALWAYS" minWidth="260.0" />
-                        </columnConstraints>
+                  <Label text="Ngày ban hành:" style="-fx-text-fill: #334155; -fx-font-weight: bold;" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                  <DatePicker fx:id="dpSearchDate" maxWidth="Infinity" style="-fx-background-color: transparent; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6;" GridPane.columnIndex="3" GridPane.rowIndex="0" />
 
-                        <Label text="Tên thông báo" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                        <TextField fx:id="txtSearchTitle" style="-fx-background-radius: 8; -fx-padding: 8 10;" promptText="Nhập tên thông báo" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                  <Label text="Trạng thái:" style="-fx-text-fill: #334155; -fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                  <ComboBox fx:id="cbSearchStatus" maxWidth="Infinity" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 3 6;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+               </GridPane>
+               <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                  <padding>
+                     <Insets bottom="5.0" top="5.0" />
+                  </padding>
+                  <Button fx:id="btnResetSearch" mnemonicParsing="false" onAction="#handleResetSearch" text="Reset" style="-fx-background-color: #64748b; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 18; -fx-background-radius: 6; -fx-cursor: hand;" />
+                  <Button fx:id="btnSearchNotification" mnemonicParsing="false" onAction="#handleSearchNotification" text="Tìm kiếm" style="-fx-background-color: #22c55e; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 18; -fx-background-radius: 6; -fx-cursor: hand;" />
+               </HBox>
+            </VBox>
+         </Tab>
+      </tabs>
+   </TabPane>
 
-                        <Label text="Ngày ban hành" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;" GridPane.columnIndex="2" GridPane.rowIndex="0" />
-                        <DatePicker fx:id="dpSearchDate" style="-fx-background-radius: 8;" GridPane.columnIndex="3" GridPane.rowIndex="0" />
-
-                        <Label text="Trạng thái" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                        <ComboBox fx:id="cbSearchStatus" style="-fx-background-radius: 8;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                    </GridPane>
-                    <HBox alignment="CENTER_RIGHT" spacing="14.0" style="-fx-padding: 4 0 0 0;">
-                        <Button fx:id="btnResetSearch" mnemonicParsing="false" onAction="#handleResetSearch" text="Reset" style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 9 16; -fx-background-radius: 8;" />
-                        <Button fx:id="btnSearchNotification" mnemonicParsing="false" onAction="#handleSearchNotification" text="Tìm kiếm" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 9 16; -fx-background-radius: 8;" />
-                    </HBox>
-                </VBox>
-            </Tab>
-        </tabs>
-    </TabPane>
-
-    <VBox spacing="12.0" style="-fx-background-color: white; -fx-background-radius: 14; -fx-border-color: #dfe7f1; -fx-border-radius: 14; -fx-effect: dropshadow(gaussian, rgba(35, 52, 72, 0.10), 14, 0, 0, 6);" VBox.vgrow="ALWAYS">
-        <padding>
-            <Insets top="16.0" right="16.0" bottom="16.0" left="16.0" />
-        </padding>
-        <Label text="Danh sách thông báo" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #243447;" />
-        <TableView fx:id="tableThongBao" VBox.vgrow="ALWAYS" style="-fx-background-radius: 10; -fx-border-color: #dfe7f1; -fx-border-radius: 10;">
-            <columns>
-                <TableColumn fx:id="colStt" prefWidth="60.0" text="STT" />
-                <TableColumn fx:id="colTitle" prefWidth="240.0" text="Tên thông báo" />
-                <TableColumn fx:id="colFile" prefWidth="220.0" text="File đính kèm" />
-                <TableColumn fx:id="colNgayBanHanh" prefWidth="140.0" text="Ngày ban hành" />
-                <TableColumn fx:id="colStatus" prefWidth="130.0" text="Trạng thái" />
-                <TableColumn fx:id="colActions" prefWidth="140.0" text="Hành động" />
-            </columns>
-        </TableView>
-    </VBox>
+   <VBox spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.02), 6, 0, 0, 1);" VBox.vgrow="ALWAYS">
+      <padding>
+         <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+      </padding>
+      <Label text="Danh sách thông báo" style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1e293b;" />
+      <TableView fx:id="tableThongBao" VBox.vgrow="ALWAYS" style="-fx-background-color: white; -fx-background-radius: 6; -fx-border-color: #cbd5e1; -fx-border-radius: 6;">
+         <columns>
+            <TableColumn fx:id="colStt" prefWidth="60.0" style="-fx-alignment: CENTER;" text="STT" />
+            <TableColumn fx:id="colTitle" prefWidth="240.0" text="Tên thông báo" />
+            <TableColumn fx:id="colFile" prefWidth="220.0" text="File đính kèm" />
+            <TableColumn fx:id="colNgayBanHanh" prefWidth="140.0" style="-fx-alignment: CENTER;" text="Ngày ban hành" />
+            <TableColumn fx:id="colStatus" prefWidth="130.0" style="-fx-alignment: CENTER;" text="Trạng thái" />
+            <TableColumn fx:id="colActions" prefWidth="140.0" style="-fx-alignment: CENTER;" text="Hành động" />
+         </columns>
+      </TableView>
+   </VBox>
 </VBox>
