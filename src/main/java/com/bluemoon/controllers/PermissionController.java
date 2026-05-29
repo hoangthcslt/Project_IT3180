@@ -17,6 +17,14 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
+import javafx.stage.FileChooser;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.File;
+import java.io.FileOutputStream;
 
 import java.util.HashSet;
 import java.util.List;
@@ -24,23 +32,39 @@ import java.util.Optional;
 import java.util.Set;
 
 public class PermissionController {
-    @FXML private TextField txtSearchGroup;
-    @FXML private TableView<UserGroup> tblGroups;
-    @FXML private TableColumn<UserGroup, Number> colGroupStt;
-    @FXML private TableColumn<UserGroup, String> colGroupName;
-    @FXML private TableColumn<UserGroup, String> colGroupDesc;
-    @FXML private TableColumn<UserGroup, Void> colPermission;
-    @FXML private TableColumn<UserGroup, Void> colEdit;
-    @FXML private TableColumn<UserGroup, Void> colDelete;
+    @FXML
+    private TextField txtSearchGroup;
+    @FXML
+    private TableView<UserGroup> tblGroups;
+    @FXML
+    private TableColumn<UserGroup, Number> colGroupStt;
+    @FXML
+    private TableColumn<UserGroup, String> colGroupName;
+    @FXML
+    private TableColumn<UserGroup, String> colGroupDesc;
+    @FXML
+    private TableColumn<UserGroup, Void> colPermission;
+    @FXML
+    private TableColumn<UserGroup, Void> colEdit;
+    @FXML
+    private TableColumn<UserGroup, Void> colDelete;
 
-    @FXML private TextField txtSearchUser;
-    @FXML private TableView<UserGroupAssignment> tblUserGroups;
-    @FXML private TableColumn<UserGroupAssignment, Number> colUserStt;
-    @FXML private TableColumn<UserGroupAssignment, String> colUsername;
-    @FXML private TableColumn<UserGroupAssignment, String> colUserGroup;
-    @FXML private TableColumn<UserGroupAssignment, String> colUserRole;
-    @FXML private TableColumn<UserGroupAssignment, Void> colUserAction;
+    @FXML
+    private TextField txtSearchUser;
+    @FXML
+    private TableView<UserGroupAssignment> tblUserGroups;
+    @FXML
+    private TableColumn<UserGroupAssignment, Number> colUserStt;
+    @FXML
+    private TableColumn<UserGroupAssignment, String> colUsername;
+    @FXML
+    private TableColumn<UserGroupAssignment, String> colUserGroup;
+    @FXML
+    private TableColumn<UserGroupAssignment, String> colUserRole;
+    @FXML
+    private TableColumn<UserGroupAssignment, Void> colUserAction;
 
+    
     private final PermissionService permissionService = new PermissionService();
 
     @FXML
@@ -79,9 +103,62 @@ public class PermissionController {
         }
         showAssignUserDialog(selected);
     }
+     @FXML
+    void handleAddUser() {
+        showAddUserDialog();
+    }
+
+    @FXML
+    void handleExportUserExcel() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Xuất Excel");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Excel Files", "*.xlsx"));
+        fileChooser.setInitialFileName("Users.xlsx");
+        File file = fileChooser.showSaveDialog(tblUserGroups.getScene().getWindow());
+
+        if (file != null) {
+            try (Workbook workbook = new XSSFWorkbook()) {
+                Sheet sheet = workbook.createSheet("Users");
+                Row headerRow = sheet.createRow(0);
+                headerRow.createCell(0).setCellValue("Username");
+                headerRow.createCell(1).setCellValue("Password");
+
+                List<User> users = permissionService.findAllUsers();
+                int rowNum = 1;
+                for (User user : users) {
+                    String pass = user.getPassword();
+                    // Chỉ xuất những account chưa bị mã hoá
+                    if (pass != null && !pass.startsWith("$2a$")) {
+                        Row row = sheet.createRow(rowNum++);
+                        row.createCell(0).setCellValue(user.getUsername());
+                        row.createCell(1).setCellValue(pass);
+                    }
+                }
+
+                try (FileOutputStream fileOut = new FileOutputStream(file)) {
+                    workbook.write(fileOut);
+                }
+
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Thành công");
+                alert.setHeaderText(null);
+                alert.setContentText("Xuất file Excel thành công!");
+                alert.showAndWait();
+            } catch (Exception e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Lỗi");
+                alert.setHeaderText("Không thể xuất file");
+                alert.setContentText(e.getMessage());
+                alert.showAndWait();
+            }
+        }
+    }
 
     private void setupGroupTable() {
-        colGroupStt.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(tblGroups.getItems().indexOf(cell.getValue()) + 1));
+        tblGroups.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+        colGroupStt.setCellValueFactory(
+                cell -> new ReadOnlyObjectWrapper<>(tblGroups.getItems().indexOf(cell.getValue()) + 1));
+
         colGroupName.setCellValueFactory(new PropertyValueFactory<>("tenNhom"));
         colGroupDesc.setCellValueFactory(new PropertyValueFactory<>("moTa"));
         colPermission.setCellFactory(col -> actionCell("🔐", group -> showPermissionDialog(group)));
@@ -91,7 +168,8 @@ public class PermissionController {
 
     private void setupUserGroupTable() {
         tblUserGroups.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
-        colUserStt.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(tblUserGroups.getItems().indexOf(cell.getValue()) + 1));
+        colUserStt.setCellValueFactory(
+                cell -> new ReadOnlyObjectWrapper<>(tblUserGroups.getItems().indexOf(cell.getValue()) + 1));
         colUsername.setCellValueFactory(new PropertyValueFactory<>("username"));
         colUserGroup.setCellValueFactory(new PropertyValueFactory<>("groupName"));
         colUserRole.setCellValueFactory(new PropertyValueFactory<>("role"));
@@ -103,7 +181,7 @@ public class PermissionController {
             {
                 box.setAlignment(Pos.CENTER);
                 editButton.setOnAction(event -> showAssignUserDialog(getTableView().getItems().get(getIndex())));
-                deleteButton.setOnAction(event -> confirmRemoveUserGroup(getTableView().getItems().get(getIndex())));
+                deleteButton.setOnAction(event -> confirmDeleteUser(getTableView().getItems().get(getIndex())));
             }
 
             @Override
@@ -134,9 +212,13 @@ public class PermissionController {
     private Button createIconButton(String text) {
         Button button = new Button(text);
         button.setMinSize(34, 30);
-        button.setStyle("-fx-background-color: #eef3f8; -fx-background-radius: 7; -fx-font-weight: bold; -fx-cursor: hand;");
-        button.setOnMouseEntered(event -> button.setStyle("-fx-background-color: #d9e7f5; -fx-background-radius: 7; -fx-font-weight: bold; -fx-cursor: hand;"));
-        button.setOnMouseExited(event -> button.setStyle("-fx-background-color: #eef3f8; -fx-background-radius: 7; -fx-font-weight: bold; -fx-cursor: hand;"));
+        button.setStyle(
+                "-fx-background-color: #eef3f8; -fx-background-radius: 7; -fx-font-weight: bold; -fx-cursor: hand;");
+        button.setOnMouseEntered(event -> button.setStyle(
+                "-fx-background-color: #d9e7f5; -fx-background-radius: 7; -fx-font-weight: bold; -fx-cursor: hand;"));
+        button.setOnMouseExited(event -> button.setStyle(
+                "-fx-background-color: #eef3f8; -fx-background-radius: 7; -fx-font-weight: bold; -fx-cursor: hand;"));
+                
         return button;
     }
 
