@@ -1,0 +1,70 @@
+/* Hiệu ứng khung kính (Glassmorphism) */
+.glass-container {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-background-radius: 20;
+    -fx-border-color: rgba(255, 255, 255, 0.2);
+    -fx-border-radius: 20;
+    -fx-border-width: 1.5;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.25), 20, 0, 0, 10);
+}
+
+/* Khung chứa Icon và TextField */
+.input-container {
+    -fx-background-color: rgba(0, 0, 0, 0.2);
+    -fx-background-radius: 8;
+    -fx-border-color: rgba(255, 255, 255, 0.15);
+    -fx-border-radius: 8;
+    -fx-pref-height: 45;
+}
+
+/* Ẩn viền và nền mặc định của TextField/PasswordField */
+.custom-text-field {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: #888888;
+    -fx-font-size: 14px;
+    -fx-padding: 0 10 0 0;
+}
+
+.custom-text-field:focused {
+    -fx-background-color: transparent;
+}
+
+/* Khi người dùng click vào khung nhập liệu, viền sáng lên */
+.input-container:focused-within {
+    -fx-border-color: #2a84ff;
+}
+
+/* Nút đăng nhập Gradient màu xanh */
+.btn-login {
+    -fx-background-color: linear-gradient(to right, #4facfe, #00f2fe);
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
+/* Hiệu ứng khi di chuột qua nút đăng nhập */
+.btn-login:hover {
+    -fx-background-color: linear-gradient(to right, #6ec0ff, #33f5fe);
+    -fx-effect: dropshadow(gaussian, rgba(79, 172, 254, 0.5), 10, 0, 0, 0);
+}
+
+.btn-login:pressed {
+    -fx-background-color: linear-gradient(to right, #2a84ff, #00b8d4);
+}
+
+/* Làm đẹp Checkbox */
+.check-box .box {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-border-color: rgba(255, 255, 255, 0.5);
+    -fx-border-radius: 3;
+}
+
+.check-box:selected .mark {
+    -fx-background-color: white;
+}
+
+/* Lớp phủ nhuộm xanh bức ảnh nền */
+.bg-overlay {
+    /* Tạo một lớp phủ gradient từ xanh dương đậm sang xanh đen, độ trong suốt 70% */
+    -fx-background-color: linear-gradient(to bottom right, rgba(42, 132, 255, 0.4), rgba(0, 86, 179, 0.5));
+}
