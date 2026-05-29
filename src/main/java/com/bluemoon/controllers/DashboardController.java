@@ -5,6 +5,8 @@ import com.bluemoon.models.HoKhau;
 import com.bluemoon.models.KhoanThu;
 import com.bluemoon.models.NhanKhau;
 import com.bluemoon.models.PaymentStatusView;
+import com.bluemoon.repositories.UserRepository;
+import org.mindrot.jbcrypt.BCrypt;
 import com.bluemoon.services.FeeService;
 import com.bluemoon.services.HouseholdService;
 import com.bluemoon.services.PaymentService;
@@ -22,6 +24,16 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.PasswordField;
+import javafx.scene.layout.GridPane;
+import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.shape.Circle;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.ImagePattern;
+import javafx.scene.image.Image;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
@@ -42,18 +54,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-import com.bluemoon.repositories.UserRepository;
-import org.mindrot.jbcrypt.BCrypt;
-import javafx.scene.control.MenuButton;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.PasswordField;
-import javafx.scene.layout.GridPane;
-import javafx.scene.control.ButtonBar.ButtonData;
-import javafx.scene.shape.Circle;
-import javafx.scene.paint.Color;
-import javafx.scene.paint.ImagePattern;
-import javafx.scene.image.Image;
 
 public class DashboardController {
 
@@ -449,7 +449,8 @@ public class DashboardController {
         btnTienIch.setVisible(true);
         btnTienIch.setManaged(true);
     }
-       @FXML
+
+    @FXML
     void handleChangePassword(ActionEvent event) {
         Dialog<String> dialog = new Dialog<>();
         dialog.setTitle("Đổi mật khẩu");
@@ -521,7 +522,6 @@ public class DashboardController {
         });
     }
 
-  
     @FXML
     void handleLogout(ActionEvent event) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -549,4 +549,3 @@ public class DashboardController {
         }
     }
 }
-

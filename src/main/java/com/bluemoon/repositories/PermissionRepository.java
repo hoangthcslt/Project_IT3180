@@ -279,8 +279,48 @@ public class PermissionRepository {
         }
     }
 
-    public void removeUserFromGroups(int userId) {
-        String sql = "DELETE FROM user_group_mapping WHERE user_id = ?";
+    public void insertUserAndGroup(String username, String password, String role, int groupId) {
+        String insertUserSql = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)";
+        String insertGroupSql = "INSERT INTO user_group_mapping (user_id, group_id) VALUES (?, ?)";
+        try (Connection conn = DBConnection.getConnection()) {
+            conn.setAutoCommit(false);
+            try (PreparedStatement insertUserStmt = conn.prepareStatement(insertUserSql,
+                    Statement.RETURN_GENERATED_KEYS);
+                    PreparedStatement insertGroupStmt = conn.prepareStatement(insertGroupSql)) {
+
+                insertUserStmt.setString(1, username);
+                insertUserStmt.setString(2, password);
+                insertUserStmt.setString(3, role);
+                insertUserStmt.executeUpdate();
+
+                int userId = -1;
+                try (ResultSet rs = insertUserStmt.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        userId = rs.getInt(1);
+                    }
+                }
+
+                if (userId != -1) {
+                    insertGroupStmt.setInt(1, userId);
+                    insertGroupStmt.setInt(2, groupId);
+                    insertGroupStmt.executeUpdate();
+                }
+
+                conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new IllegalStateException("Khong the them user.", e);
+        }
+    }
+
+    public void deleteUser(int userId) {
+        String sql = "DELETE FROM users WHERE id = ?";
         try (Connection conn = DBConnection.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, userId);

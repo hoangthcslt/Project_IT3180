@@ -37,6 +37,9 @@
                             <Button onAction="#handleAddGroup" text="+ Thêm mới" style="-fx-background-color: #2f80ed; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 9 16; -fx-background-radius: 8;" />
                         </HBox>
                         <TableView fx:id="tblGroups" VBox.vgrow="ALWAYS">
+                            <columnResizePolicy>
+                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                            </columnResizePolicy>
                             <columns>
                                 <TableColumn fx:id="colGroupStt" prefWidth="55.0" text="STT" />
                                 <TableColumn fx:id="colGroupName" prefWidth="170.0" text="Tên nhóm" />
@@ -57,9 +60,14 @@
                             <Label text="Tìm kiếm" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
                             <TextField fx:id="txtSearchUser" promptText="Username hoặc vai trò" HBox.hgrow="ALWAYS" />
                             <Button onAction="#handleSearchUser" text="🔎 Tìm kiếm" style="-fx-background-color: #34495e; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 9 16; -fx-background-radius: 8;" />
+                            <Button onAction="#handleAddUser" text="+ Thêm" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 9 16; -fx-background-radius: 8;" />
                             <Button onAction="#handleAssignUser" text="Sửa user" style="-fx-background-color: #2f80ed; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 9 16; -fx-background-radius: 8;" />
+                            <Button onAction="#handleExportUserExcel" text="📥 Xuất Excel" style="-fx-background-color: #16a085; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 9 16; -fx-background-radius: 8;" />
                         </HBox>
                         <TableView fx:id="tblUserGroups" VBox.vgrow="ALWAYS">
+                            <columnResizePolicy>
+                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                            </columnResizePolicy>
                             <columns>
                                 <TableColumn fx:id="colUserStt" prefWidth="55.0" text="STT" />
                                 <TableColumn fx:id="colUsername" prefWidth="190.0" text="Username" />

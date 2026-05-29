@@ -64,7 +64,6 @@ public class PermissionController {
     @FXML
     private TableColumn<UserGroupAssignment, Void> colUserAction;
 
-    
     private final PermissionService permissionService = new PermissionService();
 
     @FXML
@@ -103,7 +102,8 @@ public class PermissionController {
         }
         showAssignUserDialog(selected);
     }
-     @FXML
+
+    @FXML
     void handleAddUser() {
         showAddUserDialog();
     }
@@ -158,7 +158,6 @@ public class PermissionController {
         tblGroups.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
         colGroupStt.setCellValueFactory(
                 cell -> new ReadOnlyObjectWrapper<>(tblGroups.getItems().indexOf(cell.getValue()) + 1));
-
         colGroupName.setCellValueFactory(new PropertyValueFactory<>("tenNhom"));
         colGroupDesc.setCellValueFactory(new PropertyValueFactory<>("moTa"));
         colPermission.setCellFactory(col -> actionCell("🔐", group -> showPermissionDialog(group)));
@@ -218,7 +217,6 @@ public class PermissionController {
                 "-fx-background-color: #d9e7f5; -fx-background-radius: 7; -fx-font-weight: bold; -fx-cursor: hand;"));
         button.setOnMouseExited(event -> button.setStyle(
                 "-fx-background-color: #eef3f8; -fx-background-radius: 7; -fx-font-weight: bold; -fx-cursor: hand;"));
-                
         return button;
     }
 
@@ -227,7 +225,8 @@ public class PermissionController {
     }
 
     private void loadUserAssignments() {
-        tblUserGroups.setItems(FXCollections.observableArrayList(permissionService.findUserAssignments(txtSearchUser.getText())));
+        tblUserGroups.setItems(
+                FXCollections.observableArrayList(permissionService.findUserAssignments(txtSearchUser.getText())));
     }
 
     private void showGroupDialog(UserGroup group) {
@@ -343,7 +342,8 @@ public class PermissionController {
         dialog.getDialogPane().lookupButton(ButtonType.CANCEL).setVisible(false);
 
         TextField txtUsername = new TextField(assignment == null ? "" : assignment.getUsername());
-        ComboBox<UserGroup> cbGroups = new ComboBox<>(FXCollections.observableArrayList(permissionService.findGroups(null)));
+        ComboBox<UserGroup> cbGroups = new ComboBox<>(
+                FXCollections.observableArrayList(permissionService.findGroups(null)));
         TextField txtRole = new TextField(assignment == null ? "" : assignment.getRole());
         txtUsername.setPrefWidth(280);
         cbGroups.setPrefWidth(280);
@@ -402,11 +402,92 @@ public class PermissionController {
                 return;
             }
             try {
-                permissionService.updateUserAndGroup(assignment.getUserId(), txtUsername.getText(), txtRole.getText(), selectedGroup.getId());
+                permissionService.updateUserAndGroup(assignment.getUserId(), txtUsername.getText(), txtRole.getText(),
+                        selectedGroup.getId());
                 loadUserAssignments();
                 dialog.close();
             } catch (IllegalArgumentException | IllegalStateException ex) {
                 error.setText(ex.getMessage());
+            }
+        });
+        closeButton.setOnAction(event -> dialog.close());
+        dialog.showAndWait();
+    }
+
+    private void showAddUserDialog() {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Thêm người dùng mới");
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CANCEL, ButtonType.OK);
+        dialog.getDialogPane().lookupButton(ButtonType.OK).setVisible(false);
+        dialog.getDialogPane().lookupButton(ButtonType.CANCEL).setVisible(false);
+
+        TextField txtUsername = new TextField();
+        PasswordField txtPassword = new PasswordField();
+        ComboBox<UserGroup> cbGroups = new ComboBox<>(
+                FXCollections.observableArrayList(permissionService.findGroups(null)));
+        txtUsername.setPrefWidth(280);
+        txtPassword.setPrefWidth(280);
+        cbGroups.setPrefWidth(280);
+
+        cbGroups.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(UserGroup group) {
+                return group == null ? "" : group.getTenNhom();
+            }
+
+            @Override
+            public UserGroup fromString(String string) {
+                return null;
+            }
+        });
+        selectInitialGroup(cbGroups, null);
+
+        Label error = new Label();
+        error.setStyle("-fx-text-fill: #c0392b; -fx-font-weight: bold;");
+        Button saveButton = primaryButton("Lưu");
+        Button closeButton = secondaryButton("Đóng");
+        HBox actions = new HBox(10, saveButton, closeButton);
+        actions.setAlignment(Pos.CENTER_RIGHT);
+
+        GridPane form = new GridPane();
+        form.setHgap(12);
+        form.setVgap(12);
+        form.setPadding(new Insets(16));
+        form.add(new Label("Username *"), 0, 0);
+        form.add(txtUsername, 1, 0);
+        form.add(new Label("Password *"), 0, 1);
+        form.add(txtPassword, 1, 1);
+        form.add(new Label("Nhóm *"), 0, 2);
+        form.add(cbGroups, 1, 2);
+        form.add(error, 1, 3);
+        form.add(actions, 1, 4);
+        dialog.getDialogPane().setContent(form);
+
+        saveButton.setOnAction(event -> {
+            String username = txtUsername.getText();
+            String password = txtPassword.getText();
+            UserGroup selectedGroup = cbGroups.getValue();
+
+            if (username == null || username.trim().isEmpty()) {
+                error.setText("Username không được để trống.");
+                return;
+            }
+            if (password == null || password.trim().isEmpty()) {
+                error.setText("Password không được để trống.");
+                return;
+            }
+            if (selectedGroup == null) {
+                error.setText("Vui lòng chọn nhóm.");
+                return;
+            }
+
+            try {
+                permissionService.insertUserAndGroup(username, password, selectedGroup.getTenNhom(),
+                        selectedGroup.getId());
+                loadUserAssignments();
+                dialog.close();
+            } catch (Exception ex) {
+                error.setText("Lỗi: " + ex.getMessage());
             }
         });
         closeButton.setOnAction(event -> dialog.close());
@@ -432,27 +513,29 @@ public class PermissionController {
                 .orElse(groups.isEmpty() ? null : groups.get(0));
     }
 
-    private void confirmRemoveUserGroup(UserGroupAssignment assignment) {
+    private void confirmDeleteUser(UserGroupAssignment assignment) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Xác nhận");
         alert.setHeaderText(null);
-        alert.setContentText("Bạn có chắc chắn muốn xóa không?");
+        alert.setContentText("Bạn có chắc chắn muốn xóa tài khoản này không?");
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            permissionService.removeUserFromGroups(assignment.getUserId());
+            permissionService.deleteUser(assignment.getUserId());
             loadUserAssignments();
         }
     }
 
     private Button primaryButton(String text) {
         Button button = new Button(text);
-        button.setStyle("-fx-background-color: #2f80ed; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 9 18; -fx-background-radius: 8;");
+        button.setStyle(
+                "-fx-background-color: #2f80ed; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 9 18; -fx-background-radius: 8;");
         return button;
     }
 
     private Button secondaryButton(String text) {
         Button button = new Button(text);
-        button.setStyle("-fx-background-color: #ecf0f1; -fx-text-fill: #2c3e50; -fx-font-weight: bold; -fx-padding: 9 18; -fx-background-radius: 8;");
+        button.setStyle(
+                "-fx-background-color: #ecf0f1; -fx-text-fill: #2c3e50; -fx-font-weight: bold; -fx-padding: 9 18; -fx-background-radius: 8;");
         return button;
     }
 }
