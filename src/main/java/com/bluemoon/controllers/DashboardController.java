@@ -12,8 +12,11 @@ import com.bluemoon.services.HouseholdService;
 import com.bluemoon.services.PaymentService;
 import com.bluemoon.services.PermissionService;
 import com.bluemoon.services.ResidentService;
+import com.bluemoon.models.ThongBao;
 import com.bluemoon.services.ThongBaoService;
 import com.bluemoon.utils.SessionManager;
+import java.io.File;
+import java.util.List;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.event.ActionEvent;
@@ -26,11 +29,13 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.PasswordField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.SVGPath;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.image.Image;
@@ -59,6 +64,9 @@ public class DashboardController {
 
     @FXML
     private MenuButton menuUser;
+
+    @FXML
+    private MenuButton menuNotifications;
 
     @FXML
     private BorderPane mainBorderPane;
@@ -114,7 +122,7 @@ public class DashboardController {
             menuUser.setGraphic(graphicBox);
             menuUser.setText("");
         }
-
+        refreshNotifications();
     }
 
     private void loadView(String fxml) {
@@ -123,6 +131,9 @@ public class DashboardController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/" + fxml));
             Node view = loader.load();
             mainBorderPane.setCenter(view);
+            if (loader.getController() instanceof ThongBaoController) {
+                ((ThongBaoController) loader.getController()).setDashboardController(this);
+            }
             System.out.println("[DEBUG] Open " + fxml + " success");
         } catch (IOException e) {
             System.err.println("[ERROR] Failed to load view: " + fxml);
@@ -367,6 +378,7 @@ public class DashboardController {
         lblFeeTotal.setText(feeService.getAllFees().size() + " Khoản thu");
         lblPaidTotal.setText(paymentService.countPaidItems() + " Đã nộp");
         lblUnpaidTotal.setText(paymentService.countUnpaidItems() + " Chưa nộp");
+        refreshNotifications();
     }
 
     @FXML
@@ -479,7 +491,7 @@ public class DashboardController {
         grid.add(confirmPassword, 1, 2);
 
         dialog.getDialogPane().setContent(grid);
-        
+
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == saveButtonType) {
                 if (newPassword.getText().isEmpty()) {
@@ -547,5 +559,102 @@ public class DashboardController {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void refreshNotifications() {
+        User currentUser = SessionManager.getInstance().getCurrentUser();
+        if (currentUser != null && menuNotifications != null) {
+            List<ThongBao> list = thongBaoService.getNotificationsForUser(currentUser.getId());
+            List<Integer> readIds = thongBaoService.getReadNotificationIds(currentUser.getId());
+            long unreadCount = list.stream().filter(tb -> !readIds.contains(tb.getId())).count();
+
+            menuNotifications.getItems().clear();
+
+            HBox graphicBox = new HBox(6);
+            graphicBox.setAlignment(Pos.CENTER);
+
+            SVGPath bellIcon = new SVGPath();
+            bellIcon.setContent(
+                    "M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.002-12a4.5 4.5 0 0 0-4.498 4.498v3.504l-1 1v1h11v-1l-1-1V8.5A4.5 4.5 0 0 0 8.002 4z");
+            bellIcon.setFill(Color.WHITE);
+
+            Label textLabel = new Label("Thông báo");
+            textLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;");
+
+            graphicBox.getChildren().addAll(bellIcon, textLabel);
+
+            if (unreadCount > 0) {
+                StackPane badge = new StackPane();
+                badge.setStyle("-fx-background-color: #ef4444; -fx-background-radius: 10px; -fx-padding: 2 6;");
+                Label badgeLabel = new Label(String.valueOf(unreadCount));
+                badgeLabel.setStyle("-fx-text-fill: white; -fx-font-size: 11px; -fx-font-weight: bold;");
+                badge.getChildren().add(badgeLabel);
+                graphicBox.getChildren().add(badge);
+            }
+
+            menuNotifications.setGraphic(graphicBox);
+            menuNotifications.setText("");
+
+            if (list.isEmpty()) {
+                MenuItem item = new MenuItem("Không có thông báo mới");
+                item.setDisable(true);
+                menuNotifications.getItems().add(item);
+            } else {
+                if (unreadCount > 0) {
+                    MenuItem markAllReadItem = new MenuItem("✓ Đánh dấu tất cả là đã đọc");
+                    markAllReadItem.setStyle("-fx-font-weight: bold; -fx-text-fill: #22c55e;");
+                    markAllReadItem.setOnAction(evt -> {
+                        for (ThongBao tb : list) {
+                            if (!readIds.contains(tb.getId())) {
+                                thongBaoService.markAsRead(currentUser.getId(), tb.getId());
+                            }
+                        }
+                        refreshNotifications();
+                    });
+                    menuNotifications.getItems().add(markAllReadItem);
+                    menuNotifications.getItems().add(new SeparatorMenuItem());
+                }
+
+                for (ThongBao tb : list) {
+                    boolean isRead = readIds.contains(tb.getId());
+                    String title = tb.getTenThongBao();
+                    if (title.length() > 30) {
+                        title = title.substring(0, 27) + "...";
+                    }
+                    String statusSuffix = isRead ? "" : " (Mới)";
+                    MenuItem item = new MenuItem(title + statusSuffix + " (" + tb.getNgayBanHanh() + ")");
+                    if (isRead) {
+                        item.setStyle("-fx-text-fill: #94a3b8;");
+                    } else {
+                        item.setStyle("-fx-font-weight: bold; -fx-text-fill: #0f172a;");
+                    }
+                    item.setOnAction(evt -> {
+                        thongBaoService.markAsRead(currentUser.getId(), tb.getId());
+                        showNotificationDetail(tb);
+                        refreshNotifications();
+                    });
+                    menuNotifications.getItems().add(item);
+                }
+            }
+        }
+    }
+
+    private void showNotificationDetail(ThongBao tb) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Chi tiết thông báo");
+        alert.setHeaderText(tb.getTenThongBao());
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Ngày ban hành: ").append(tb.getNgayBanHanh()).append("\n");
+        if (tb.getFilePath() != null && !tb.getFilePath().isBlank()) {
+            File f = new File(tb.getFilePath());
+            sb.append("File đính kèm: ").append(f.getName()).append("\n");
+            sb.append("Đường dẫn file: ").append(tb.getFilePath());
+        } else {
+            sb.append("File đính kèm: Không có");
+        }
+
+        alert.setContentText(sb.toString());
+        alert.showAndWait();
     }
 }

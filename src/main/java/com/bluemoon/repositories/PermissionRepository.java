@@ -336,26 +336,26 @@ public class PermissionRepository {
                         "id INT AUTO_INCREMENT PRIMARY KEY, " +
                         "ten_nhom VARCHAR(100) NOT NULL UNIQUE, " +
                         "mo_ta VARCHAR(255) NOT NULL" +
-                        ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
+                        ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
                 "CREATE TABLE IF NOT EXISTS permissions (" +
                         "id INT AUTO_INCREMENT PRIMARY KEY, " +
                         "code VARCHAR(50) NOT NULL UNIQUE, " +
                         "name VARCHAR(100) NOT NULL" +
-                        ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
+                        ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
                 "CREATE TABLE IF NOT EXISTS group_permission (" +
                         "group_id INT NOT NULL, " +
                         "permission_code VARCHAR(50) NOT NULL, " +
                         "PRIMARY KEY (group_id, permission_code), " +
                         "FOREIGN KEY (group_id) REFERENCES user_group(id) ON DELETE CASCADE, " +
                         "FOREIGN KEY (permission_code) REFERENCES permissions(code) ON DELETE CASCADE" +
-                        ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
+                        ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
                 "CREATE TABLE IF NOT EXISTS user_group_mapping (" +
                         "user_id INT NOT NULL, " +
                         "group_id INT NOT NULL, " +
                         "PRIMARY KEY (user_id, group_id), " +
                         "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, " +
                         "FOREIGN KEY (group_id) REFERENCES user_group(id) ON DELETE CASCADE" +
-                        ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
+                        ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
         };
 
         try (Connection conn = DBConnection.getConnection();
@@ -384,13 +384,33 @@ public class PermissionRepository {
     }
 
     private void ensureDefaultGroup() {
-        String sql = "INSERT IGNORE INTO user_group (ten_nhom, mo_ta) VALUES (?, ?)";
+        String sqlGroup = "INSERT IGNORE INTO user_group (ten_nhom, mo_ta) VALUES (?, ?)";
         try (Connection conn = DBConnection.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                PreparedStatement pstmt = conn.prepareStatement(sqlGroup)) {
             pstmt.setString(1, "Trống");
             pstmt.setString(2, "Nhóm mặc định khi user chưa được gán");
             pstmt.executeUpdate();
+
+            pstmt.setString(1, "ADMIN");
+            pstmt.setString(2, "Nhóm quản trị viên hệ thống");
+            pstmt.executeUpdate();
+
+            pstmt.setString(1, "ACCOUNTANT");
+            pstmt.setString(2, "Nhóm kế toán viên");
+            pstmt.executeUpdate();
         } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        String sqlMapping = "INSERT IGNORE INTO user_group_mapping (user_id, group_id) " +
+                            "SELECT u.id, g.id FROM users u " +
+                            "JOIN user_group g ON g.ten_nhom = u.role COLLATE utf8mb4_unicode_ci " +
+                            "WHERE u.username IN ('admin_blue', 'ketoan_moon')";
+        try (Connection conn = DBConnection.getConnection();
+             Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate(sqlMapping);
+        } catch (SQLException e) {
+            System.err.println("Loi khi tu dong gan nhom mac dinh cho user: " + e.getMessage());
             e.printStackTrace();
         }
     }

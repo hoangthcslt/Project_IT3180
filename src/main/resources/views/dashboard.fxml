@@ -24,6 +24,10 @@
                 </font>
             </Label>
             <HBox HBox.hgrow="ALWAYS" />
+            <MenuButton fx:id="menuNotifications" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand;" text="">
+                <items>
+                </items>
+            </MenuButton>
             <MenuButton fx:id="menuUser" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand;">
                 <items>
                     <MenuItem text="Đổi mật khẩu" onAction="#handleChangePassword"/>
@@ -47,8 +51,6 @@
             <Button fx:id="btnThongKe" maxWidth="Infinity" mnemonicParsing="false" onAction="#handleThongKe" text="Thống kê" style="-fx-background-color: #ecf0f1; -fx-font-weight: bold; -fx-padding: 10px;" />
             <Button fx:id="btnPhanQuyen" maxWidth="Infinity" mnemonicParsing="false" onAction="#handlePhanQuyen" text="Phân quyền" style="-fx-background-color: #ecf0f1; -fx-font-weight: bold; -fx-padding: 10px;" />
             <Button fx:id="btnTienIch" maxWidth="Infinity" mnemonicParsing="false" onAction="#handleTienIch" text="Tiện ích" style="-fx-background-color: #ecf0f1; -fx-font-weight: bold; -fx-padding: 10px;" />
-            <Region VBox.vgrow="ALWAYS" />
-            <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#handleLogout" text="Logout" style="-fx-background-color: #ecf0f1; -fx-font-weight: bold; -fx-padding: 10px;" />
         </VBox>
     </left>
 
