@@ -1,6 +1,7 @@
 package com.bluemoon.repositories;
 
 import com.bluemoon.utils.DBConnection;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -14,8 +15,6 @@ public class ThongKeRepository {
 
     public List<Map<String, Object>> layDuLieuThongKe() throws SQLException {
         List<Map<String, Object>> result = new ArrayList<>();
-        // Giả lập dư nợ bằng cách query tổng diện tích x đơn giá (hoặc mặc định) và trừ đi số đã thu.
-        // Tuy nhiên theo prompt, chỉ cần viết câu lệnh SQL dùng SUM() và GROUP BY
         String sql = "SELECT kt.ten_khoan_thu, SUM(nt.so_tien_nop) as tong_da_thu " +
                      "FROM khoan_thu kt " +
                      "LEFT JOIN nop_tien nt ON kt.id = nt.khoan_thu_id " +
@@ -29,10 +28,167 @@ public class ThongKeRepository {
                 Map<String, Object> row = new HashMap<>();
                 row.put("tenKhoanThu", rs.getString("ten_khoan_thu"));
                 row.put("tongDaThu", rs.getBigDecimal("tong_da_thu"));
-                // Nợ có thể tính thêm nếu có schema phức tạp, tạm thời lấy những gì sum được
                 result.add(row);
             }
         }
         return result;
+    }
+
+    public Map<String, Object> layThongKeTongQuan() throws SQLException {
+        Map<String, Object> result = new HashMap<>();
+        String sqlNhanKhau = "SELECT COUNT(*) FROM nhan_khau";
+        String sqlHoKhau = "SELECT COUNT(*) FROM ho_khau";
+        String sqlDoanhThu = "SELECT COALESCE(SUM(so_tien_nop), 0) FROM nop_tien";
+        String sqlNo = "SELECT SUM(no_phai_tra) FROM (" +
+                       "  SELECT GREATEST(hk.dien_tich * kt.don_gia - COALESCE(SUM(nt.so_tien_nop), 0), 0) AS no_phai_tra " +
+                       "  FROM ho_khau hk " +
+                       "  CROSS JOIN khoan_thu kt " +
+                       "  LEFT JOIN nop_tien nt ON nt.ho_khau_id = hk.id AND nt.khoan_thu_id = kt.id " +
+                       "  GROUP BY hk.id, kt.id, hk.dien_tich, kt.don_gia " +
+                       "  HAVING COALESCE(SUM(nt.so_tien_nop), 0) < hk.dien_tich * kt.don_gia" +
+                       ") t";
+
+        try (Connection conn = DBConnection.getConnection()) {
+            try (PreparedStatement ps = conn.prepareStatement(sqlNhanKhau); ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) result.put("tongCuDan", rs.getInt(1));
+            }
+            try (PreparedStatement ps = conn.prepareStatement(sqlHoKhau); ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) result.put("tongCanHo", rs.getInt(1));
+            }
+            try (PreparedStatement ps = conn.prepareStatement(sqlDoanhThu); ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) result.put("tongDoanhThu", rs.getBigDecimal(1));
+            }
+            try (PreparedStatement ps = conn.prepareStatement(sqlNo); ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    BigDecimal no = rs.getBigDecimal(1);
+                    result.put("tongNo", no == null ? BigDecimal.ZERO : no);
+                } else {
+                    result.put("tongNo", BigDecimal.ZERO);
+                }
+            }
+        }
+        return result;
+    }
+
+    public List<Map<String, Object>> layThongKeGioiTinh() throws SQLException {
+        List<Map<String, Object>> result = new ArrayList<>();
+        String sql = "SELECT gioi_tinh, COUNT(*) as count FROM nhan_khau GROUP BY gioi_tinh";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("gioiTinh", rs.getString("gioi_tinh"));
+                row.put("count", rs.getInt("count"));
+                result.add(row);
+            }
+        }
+        return result;
+    }
+
+    public List<Map<String, Object>> layThongKeTrangThai() throws SQLException {
+        List<Map<String, Object>> result = new ArrayList<>();
+        String sql = "SELECT trang_thai, COUNT(*) as count FROM nhan_khau GROUP BY trang_thai";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("trangThai", rs.getString("trang_thai"));
+                row.put("count", rs.getInt("count"));
+                result.add(row);
+            }
+        }
+        return result;
+    }
+
+    public List<Map<String, Object>> layThongKeNoVaThu() throws SQLException {
+        List<Map<String, Object>> result = new ArrayList<>();
+        String sql = "SELECT " +
+                     "  kt.id, " +
+                     "  kt.ten_khoan_thu, " +
+                     "  SUM(COALESCE(paid_sub.tong_nop, 0)) AS tong_da_nop, " +
+                     "  SUM(GREATEST(hk.dien_tich * kt.don_gia - COALESCE(paid_sub.tong_nop, 0), 0)) AS tong_chua_nop " +
+                     "FROM khoan_thu kt " +
+                     "CROSS JOIN ho_khau hk " +
+                     "LEFT JOIN (" +
+                     "  SELECT ho_khau_id, khoan_thu_id, SUM(so_tien_nop) AS tong_nop " +
+                     "  FROM nop_tien " +
+                     "  GROUP BY ho_khau_id, khoan_thu_id" +
+                     ") paid_sub ON paid_sub.ho_khau_id = hk.id AND paid_sub.khoan_thu_id = kt.id " +
+                     "GROUP BY kt.id, kt.ten_khoan_thu";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("tenKhoanThu", rs.getString("ten_khoan_thu"));
+                row.put("tongDaNop", rs.getBigDecimal("tong_da_nop"));
+                row.put("tongChuaNop", rs.getBigDecimal("tong_chua_nop"));
+                result.add(row);
+            }
+        }
+        return result;
+    }
+
+    public List<Map<String, Object>> layDoanhThuTheoThoiGian(String kieuThoiGian, Integer namLoc) throws SQLException {
+        List<Map<String, Object>> result = new ArrayList<>();
+        StringBuilder sql = new StringBuilder();
+        
+        if ("YEAR".equalsIgnoreCase(kieuThoiGian)) {
+            sql.append("SELECT CAST(YEAR(ngay_nop) AS CHAR) as label, SUM(so_tien_nop) as val ");
+            sql.append("FROM nop_tien ");
+            if (namLoc != null) {
+                sql.append("WHERE YEAR(ngay_nop) = ? ");
+            }
+            sql.append("GROUP BY label ORDER BY label");
+        } else if ("MONTH".equalsIgnoreCase(kieuThoiGian)) {
+            sql.append("SELECT DATE_FORMAT(ngay_nop, '%Y-%m') as label, SUM(so_tien_nop) as val ");
+            sql.append("FROM nop_tien ");
+            if (namLoc != null) {
+                sql.append("WHERE YEAR(ngay_nop) = ? ");
+            }
+            sql.append("GROUP BY label ORDER BY label");
+        } else if ("WEEK".equalsIgnoreCase(kieuThoiGian)) {
+            sql.append("SELECT DATE_FORMAT(ngay_nop, '%Y-W%u') as label, SUM(so_tien_nop) as val ");
+            sql.append("FROM nop_tien ");
+            if (namLoc != null) {
+                sql.append("WHERE YEAR(ngay_nop) = ? ");
+            }
+            sql.append("GROUP BY label ORDER BY label");
+        } else {
+            return result;
+        }
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+            if (namLoc != null) {
+                pstmt.setInt(1, namLoc);
+            }
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> row = new HashMap<>();
+                    row.put("label", rs.getString("label"));
+                    row.put("val", rs.getBigDecimal("val"));
+                    result.add(row);
+                }
+            }
+        }
+        return result;
+    }
+
+    public List<Integer> layDanhSachNamCoGiaoDich() throws SQLException {
+        List<Integer> years = new ArrayList<>();
+        String sql = "SELECT DISTINCT YEAR(ngay_nop) as nam FROM nop_tien ORDER BY nam DESC";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                int yr = rs.getInt("nam");
+                if (yr > 0) years.add(yr);
+            }
+        }
+        return years;
     }
 }

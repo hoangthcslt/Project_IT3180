@@ -7,21 +7,12 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.Node;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.FlowPane;
 import javafx.geometry.Insets;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
@@ -44,6 +35,8 @@ public class ThongBaoController {
     private DatePicker dpNgayBanHanh;
     @FXML
     private ComboBox<String> cbStatus;
+    @FXML
+    private FlowPane paneGroups;
     @FXML
     private Button btnResetForm;
     @FXML
@@ -77,6 +70,11 @@ public class ThongBaoController {
 
     private final ThongBaoService thongBaoService = new ThongBaoService();
     private String selectedFilePath;
+    private DashboardController dashboardController;
+
+    public void setDashboardController(DashboardController dashboardController) {
+        this.dashboardController = dashboardController;
+    }
 
     @FXML
     public void initialize() {
@@ -94,8 +92,23 @@ public class ThongBaoController {
         colActions.setCellFactory(col -> actionCell());
 
         tableThongBao.setItems(FXCollections.observableArrayList());
+        
+        loadGroupCheckBoxes();
         refreshTable();
         resetFormFields();
+    }
+
+    private void loadGroupCheckBoxes() {
+        paneGroups.getChildren().clear();
+        com.bluemoon.repositories.PermissionRepository permRepo = new com.bluemoon.repositories.PermissionRepository();
+        List<com.bluemoon.models.UserGroup> groups = permRepo.findGroups("");
+        for (com.bluemoon.models.UserGroup g : groups) {
+            if ("Trống".equalsIgnoreCase(g.getTenNhom())) continue; // Skip default empty group
+            CheckBox cb = new CheckBox(g.getTenNhom());
+            cb.setUserData(g.getId());
+            cb.setStyle("-fx-text-fill: #334155; -fx-padding: 0 10 0 0; -fx-font-weight: bold;");
+            paneGroups.getChildren().add(cb);
+        }
     }
 
     @FXML
@@ -115,6 +128,17 @@ public class ThongBaoController {
             String title = txtTitle.getText().trim();
             LocalDate ngayBanHanh = dpNgayBanHanh.getValue();
             String trangThai = cbStatus.getValue();
+            
+            // Read target groups
+            List<Integer> selectedGroupIds = new java.util.ArrayList<>();
+            for (Node node : paneGroups.getChildren()) {
+                if (node instanceof CheckBox) {
+                    CheckBox cb = (CheckBox) node;
+                    if (cb.isSelected()) {
+                        selectedGroupIds.add((Integer) cb.getUserData());
+                    }
+                }
+            }
 
             if (title.isEmpty()) {
                 showAlert(Alert.AlertType.WARNING, "Vui lòng nhập tên thông báo.");
@@ -128,6 +152,10 @@ public class ThongBaoController {
                 showAlert(Alert.AlertType.WARNING, "Vui lòng chọn trạng thái.");
                 return;
             }
+            if (selectedGroupIds.isEmpty()) {
+                showAlert(Alert.AlertType.WARNING, "Vui lòng chọn ít nhất một nhóm nhận thông báo.");
+                return;
+            }
 
             ThongBao thongBao = new ThongBao();
             thongBao.setTenThongBao(title);
@@ -135,11 +163,14 @@ public class ThongBaoController {
             thongBao.setNgayBanHanh(ngayBanHanh);
             thongBao.setTrangThai(trangThai);
 
-            boolean saved = thongBaoService.addNotification(thongBao);
+            boolean saved = thongBaoService.addNotification(thongBao, selectedGroupIds);
             if (saved) {
                 showAlert(Alert.AlertType.INFORMATION, "Thêm thông báo thành công.");
                 resetFormFields();
                 refreshTable();
+                if (dashboardController != null) {
+                    dashboardController.refreshNotifications();
+                }
             } else {
                 showAlert(Alert.AlertType.ERROR, "Không thể thêm thông báo. Vui lòng thử lại.");
             }
@@ -180,6 +211,11 @@ public class ThongBaoController {
         lblSelectedFile.setText("Chưa chọn file");
         dpNgayBanHanh.setValue(null);
         cbStatus.setValue(null);
+        for (Node node : paneGroups.getChildren()) {
+            if (node instanceof CheckBox) {
+                ((CheckBox) node).setSelected(false);
+            }
+        }
     }
 
     private void showEditDialog(ThongBao item) {
@@ -217,6 +253,23 @@ public class ThongBaoController {
             }
         });
 
+        // Generate editing group check boxes
+        FlowPane editPaneGroups = new FlowPane(15, 5);
+        editPaneGroups.setPrefWrapLength(360);
+        com.bluemoon.repositories.PermissionRepository permRepo = new com.bluemoon.repositories.PermissionRepository();
+        List<com.bluemoon.models.UserGroup> groups = permRepo.findGroups("");
+        List<Integer> associatedGroupIds = thongBaoService.getGroupIdsByNotification(item.getId());
+        for (com.bluemoon.models.UserGroup g : groups) {
+            if ("Trống".equalsIgnoreCase(g.getTenNhom())) continue;
+            CheckBox cb = new CheckBox(g.getTenNhom());
+            cb.setUserData(g.getId());
+            cb.setStyle("-fx-text-fill: #334155;");
+            if (associatedGroupIds.contains(g.getId())) {
+                cb.setSelected(true);
+            }
+            editPaneGroups.getChildren().add(cb);
+        }
+
         grid.add(new Label("Tên thông báo"), 0, 0);
         grid.add(editTitle, 1, 0, 2, 1);
         grid.add(new Label("File thông báo"), 0, 1);
@@ -226,6 +279,8 @@ public class ThongBaoController {
         grid.add(editDate, 1, 2);
         grid.add(new Label("Trạng thái"), 0, 3);
         grid.add(editStatus, 1, 3);
+        grid.add(new Label("Nhóm nhận"), 0, 4);
+        grid.add(editPaneGroups, 1, 4, 2, 1);
 
         dialog.getDialogPane().setContent(grid);
 
@@ -244,15 +299,32 @@ public class ThongBaoController {
                 return;
             }
 
+            List<Integer> selectedGroupIds = new java.util.ArrayList<>();
+            for (Node node : editPaneGroups.getChildren()) {
+                if (node instanceof CheckBox) {
+                    CheckBox cb = (CheckBox) node;
+                    if (cb.isSelected()) {
+                        selectedGroupIds.add((Integer) cb.getUserData());
+                    }
+                }
+            }
+            if (selectedGroupIds.isEmpty()) {
+                showAlert(Alert.AlertType.WARNING, "Vui lòng chọn ít nhất một nhóm nhận thông báo.");
+                return;
+            }
+
             item.setTenThongBao(editTitle.getText().trim());
             item.setFilePath(editFilePath[0]);
             item.setNgayBanHanh(editDate.getValue());
             item.setTrangThai(editStatus.getValue());
 
-            boolean updated = thongBaoService.updateNotification(item);
+            boolean updated = thongBaoService.updateNotification(item, selectedGroupIds);
             if (updated) {
                 showAlert(Alert.AlertType.INFORMATION, "Cập nhật thông báo thành công.");
                 refreshTable();
+                if (dashboardController != null) {
+                    dashboardController.refreshNotifications();
+                }
             } else {
                 showAlert(Alert.AlertType.ERROR, "Không thể cập nhật thông báo. Vui lòng thử lại.");
             }
@@ -275,6 +347,9 @@ public class ThongBaoController {
             if (deleted) {
                 showAlert(Alert.AlertType.INFORMATION, "Xóa thông báo thành công.");
                 refreshTable();
+                if (dashboardController != null) {
+                    dashboardController.refreshNotifications();
+                }
             } else {
                 showAlert(Alert.AlertType.ERROR, "Không thể xóa thông báo. Vui lòng thử lại.");
             }

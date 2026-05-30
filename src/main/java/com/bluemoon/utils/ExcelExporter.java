@@ -1,8 +1,6 @@
 package com.bluemoon.utils;
 
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.FileOutputStream;
@@ -14,33 +12,228 @@ import java.util.Map;
 public class ExcelExporter {
 
     public boolean exportThongKeToExcel(List<Map<String, Object>> data, String filePath) {
+        return exportThongKeToExcel(null, null, null, data, null, filePath);
+    }
+
+    public boolean exportThongKeToExcel(
+            Map<String, Object> kpiData,
+            List<Map<String, Object>> genderData,
+            List<Map<String, Object>> statusData,
+            List<Map<String, Object>> feeData,
+            List<Map<String, Object>> revenueData,
+            String filePath
+    ) {
         try (Workbook workbook = new XSSFWorkbook()) {
-            Sheet sheet = workbook.createSheet("Thong Ke Thu Phi");
+            // Setup styles
+            CellStyle headerStyle = workbook.createCellStyle();
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+            headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle cellStyle = workbook.createCellStyle();
+            cellStyle.setBorderBottom(BorderStyle.THIN);
+            cellStyle.setBorderTop(BorderStyle.THIN);
+            cellStyle.setBorderLeft(BorderStyle.THIN);
+            cellStyle.setBorderRight(BorderStyle.THIN);
+
+            CellStyle currencyStyle = workbook.createCellStyle();
+            currencyStyle.cloneStyleFrom(cellStyle);
+            DataFormat format = workbook.createDataFormat();
+            currencyStyle.setDataFormat(format.getFormat("#,##0"));
+
+            // SHEET 1: TỔNG QUAN & DÂN CƯ
+            Sheet sheet1 = workbook.createSheet("Tổng quan & Dân cư");
+            int r1 = 0;
             
-            // Header
-            Row headerRow = sheet.createRow(0);
-            headerRow.createCell(0).setCellValue("STT");
-            headerRow.createCell(1).setCellValue("Khoản Thu");
-            headerRow.createCell(2).setCellValue("Tổng Đã Thu (VND)");
+            // KPI Data
+            Row kpiTitleRow = sheet1.createRow(r1++);
+            Cell titleCell = kpiTitleRow.createCell(0);
+            titleCell.setCellValue("CHỈ SỐ TỔNG QUAN HỆ THỐNG");
+            Font titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 12);
+            CellStyle titleStyle = workbook.createCellStyle();
+            titleStyle.setFont(titleFont);
+            titleCell.setCellStyle(titleStyle);
             
-            // Data
-            int rowIndex = 1;
-            for (Map<String, Object> rowMap : data) {
-                Row row = sheet.createRow(rowIndex);
-                row.createCell(0).setCellValue(rowIndex);
-                row.createCell(1).setCellValue((String) rowMap.get("tenKhoanThu"));
-                
-                BigDecimal daThu = (BigDecimal) rowMap.get("tongDaThu");
-                row.createCell(2).setCellValue(daThu != null ? daThu.doubleValue() : 0.0);
-                
-                rowIndex++;
+            r1++; // empty row
+            
+            if (kpiData != null) {
+                Row hRow = sheet1.createRow(r1++);
+                hRow.createCell(0).setCellValue("Chỉ số");
+                hRow.createCell(1).setCellValue("Giá trị");
+                hRow.getCell(0).setCellStyle(headerStyle);
+                hRow.getCell(1).setCellStyle(headerStyle);
+
+                String[] keys = {"tongCuDan", "tongCanHo", "tongDoanhThu", "tongNo"};
+                String[] labels = {"Tổng số cư dân (người)", "Tổng số căn hộ", "Tổng doanh thu (VND)", "Tổng nợ chưa nộp (VND)"};
+                for (int i = 0; i < keys.length; i++) {
+                    Row row = sheet1.createRow(r1++);
+                    row.createCell(0).setCellValue(labels[i]);
+                    row.getCell(0).setCellStyle(cellStyle);
+                    
+                    Cell valCell = row.createCell(1);
+                    valCell.setCellStyle(cellStyle);
+                    Object val = kpiData.get(keys[i]);
+                    if (val instanceof Number) {
+                        valCell.setCellValue(((Number) val).doubleValue());
+                        if (keys[i].equals("tongDoanhThu") || keys[i].equals("tongNo")) {
+                            valCell.setCellStyle(currencyStyle);
+                        }
+                    } else {
+                        valCell.setCellValue(val != null ? val.toString() : "0");
+                    }
+                }
             }
             
-            // Auto size columns
-            sheet.autoSizeColumn(0);
-            sheet.autoSizeColumn(1);
-            sheet.autoSizeColumn(2);
+            r1 += 2; // empty rows
             
+            // Gender stats
+            if (genderData != null) {
+                Row genTitleRow = sheet1.createRow(r1++);
+                Cell c = genTitleRow.createCell(0);
+                c.setCellValue("THỐNG KÊ CƯ DÂN THEO GIỚI TÍNH");
+                CellStyle subTitleStyle = workbook.createCellStyle();
+                Font subTitleFont = workbook.createFont();
+                subTitleFont.setBold(true);
+                subTitleStyle.setFont(subTitleFont);
+                c.setCellStyle(subTitleStyle);
+                
+                Row hRow = sheet1.createRow(r1++);
+                hRow.createCell(0).setCellValue("Giới tính");
+                hRow.createCell(1).setCellValue("Số lượng");
+                hRow.getCell(0).setCellStyle(headerStyle);
+                hRow.getCell(1).setCellStyle(headerStyle);
+
+                for (Map<String, Object> map : genderData) {
+                    Row row = sheet1.createRow(r1++);
+                    String gt = (String) map.get("gioiTinh");
+                    Integer count = (Integer) map.get("count");
+                    row.createCell(0).setCellValue(gt != null ? gt : "Khác");
+                    row.createCell(1).setCellValue(count != null ? count : 0);
+                    row.getCell(0).setCellStyle(cellStyle);
+                    row.getCell(1).setCellStyle(cellStyle);
+                }
+            }
+            
+            r1 += 2;
+            
+            // Residency status stats
+            if (statusData != null) {
+                Row statTitleRow = sheet1.createRow(r1++);
+                Cell c = statTitleRow.createCell(0);
+                c.setCellValue("THỐNG KÊ TÌNH TRẠNG CƯ TRÚ");
+                CellStyle subTitleStyle = workbook.createCellStyle();
+                Font subTitleFont = workbook.createFont();
+                subTitleFont.setBold(true);
+                subTitleStyle.setFont(subTitleFont);
+                c.setCellStyle(subTitleStyle);
+
+                Row hRow = sheet1.createRow(r1++);
+                hRow.createCell(0).setCellValue("Trạng thái cư trú");
+                hRow.createCell(1).setCellValue("Số lượng");
+                hRow.getCell(0).setCellStyle(headerStyle);
+                hRow.getCell(1).setCellStyle(headerStyle);
+
+                for (Map<String, Object> map : statusData) {
+                    Row row = sheet1.createRow(r1++);
+                    String tt = (String) map.get("trangThai");
+                    Integer count = (Integer) map.get("count");
+                    row.createCell(0).setCellValue(tt != null ? tt : "Thường trú");
+                    row.createCell(1).setCellValue(count != null ? count : 0);
+                    row.getCell(0).setCellStyle(cellStyle);
+                    row.getCell(1).setCellStyle(cellStyle);
+                }
+            }
+            
+            sheet1.autoSizeColumn(0);
+            sheet1.autoSizeColumn(1);
+
+            // SHEET 2: CHI TIẾT CÁC KHOẢN THU
+            Sheet sheet2 = workbook.createSheet("Chi tiết các khoản thu");
+            Row headerRow2 = sheet2.createRow(0);
+            headerRow2.createCell(0).setCellValue("STT");
+            headerRow2.createCell(1).setCellValue("Khoản Thu");
+            headerRow2.createCell(2).setCellValue("Tổng Đã Nộp (VND)");
+            headerRow2.createCell(3).setCellValue("Tổng Chưa Nộp (VND)");
+            
+            for (int i = 0; i < 4; i++) {
+                headerRow2.createCell(i); // ensure created
+                headerRow2.getCell(i).setCellValue(i == 0 ? "STT" : i == 1 ? "Khoản Thu" : i == 2 ? "Tổng Đã Nộp (VND)" : "Tổng Chưa Nộp (VND)");
+                headerRow2.getCell(i).setCellStyle(headerStyle);
+            }
+            
+            int rowIndex2 = 1;
+            if (feeData != null) {
+                for (Map<String, Object> rowMap : feeData) {
+                    Row row = sheet2.createRow(rowIndex2);
+                    row.createCell(0).setCellValue(rowIndex2);
+                    row.createCell(1).setCellValue((String) rowMap.get("tenKhoanThu"));
+                    
+                    Cell cellNop = row.createCell(2);
+                    BigDecimal daNop = (BigDecimal) rowMap.get("tongDaNop");
+                    if (daNop == null) daNop = (BigDecimal) rowMap.get("tongDaThu"); // fallback to layDuLieuThongKe format
+                    cellNop.setCellValue(daNop != null ? daNop.doubleValue() : 0.0);
+                    cellNop.setCellStyle(currencyStyle);
+                    
+                    Cell cellChuaNop = row.createCell(3);
+                    BigDecimal chuaNop = (BigDecimal) rowMap.get("tongChuaNop");
+                    cellChuaNop.setCellValue(chuaNop != null ? chuaNop.doubleValue() : 0.0);
+                    cellChuaNop.setCellStyle(currencyStyle);
+                    
+                    row.getCell(0).setCellStyle(cellStyle);
+                    row.getCell(1).setCellStyle(cellStyle);
+                    
+                    rowIndex2++;
+                }
+            }
+            sheet2.autoSizeColumn(0);
+            sheet2.autoSizeColumn(1);
+            sheet2.autoSizeColumn(2);
+            sheet2.autoSizeColumn(3);
+
+            // SHEET 3: DOANH THU THEO THỜI GIAN
+            Sheet sheet3 = workbook.createSheet("Doanh thu theo thời gian");
+            Row headerRow3 = sheet3.createRow(0);
+            headerRow3.createCell(0).setCellValue("STT");
+            headerRow3.createCell(1).setCellValue("Mốc thời gian");
+            headerRow3.createCell(2).setCellValue("Doanh thu (VND)");
+            
+            for (int i = 0; i < 3; i++) {
+                headerRow3.createCell(i); // ensure created
+                headerRow3.getCell(i).setCellValue(i == 0 ? "STT" : i == 1 ? "Mốc thời gian" : "Doanh thu (VND)");
+                headerRow3.getCell(i).setCellStyle(headerStyle);
+            }
+
+            int rowIndex3 = 1;
+            if (revenueData != null) {
+                for (Map<String, Object> rowMap : revenueData) {
+                    Row row = sheet3.createRow(rowIndex3);
+                    row.createCell(0).setCellValue(rowIndex3);
+                    row.createCell(1).setCellValue((String) rowMap.get("label"));
+                    
+                    Cell cellDoanhThu = row.createCell(2);
+                    BigDecimal doanhThu = (BigDecimal) rowMap.get("val");
+                    cellDoanhThu.setCellValue(doanhThu != null ? doanhThu.doubleValue() : 0.0);
+                    cellDoanhThu.setCellStyle(currencyStyle);
+                    
+                    row.getCell(0).setCellStyle(cellStyle);
+                    row.getCell(1).setCellStyle(cellStyle);
+                    
+                    rowIndex3++;
+                }
+            }
+            sheet3.autoSizeColumn(0);
+            sheet3.autoSizeColumn(1);
+            sheet3.autoSizeColumn(2);
+
             try (FileOutputStream fileOut = new FileOutputStream(filePath)) {
                 workbook.write(fileOut);
             }
