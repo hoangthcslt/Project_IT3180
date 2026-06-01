@@ -33,6 +33,9 @@ Dưới đây là thiết kế chi tiết:
 | `ma_ho_khau`| VARCHAR(20) | | NOT NULL, UNIQUE | Mã căn hộ (VD: P101, P202) |
 | `ten_chu_ho`| VARCHAR(100) | | NOT NULL | Tên chủ hộ đại diện |
 | `dien_tich` | DECIMAL(10,2) | | NOT NULL | Diện tích căn hộ (m2) - dùng tính phí |
+| `status` | VARCHAR(20) | | NOT NULL, DEFAULT 'Đang ở' | Trạng thái sử dụng căn hộ |
+| `so_nguoi` | INT | | NOT NULL, DEFAULT 0 | Tổng số người thuộc hộ khẩu |
+| `phuong_tien` | VARCHAR(255) | | NOT NULL, DEFAULT 'Chưa cập nhật' | Thông tin phương tiện đăng ký |
 | `ngay_lap` | DATE | | NOT NULL | Ngày lập hộ khẩu |
 
 ### 1.3. Bảng `nhan_khau` (Nhân khẩu)
@@ -44,6 +47,7 @@ Dưới đây là thiết kế chi tiết:
 | `ho_khau_id`| INT | **FK** | NOT NULL | Thuộc hộ khẩu nào |
 | `ho_ten` | VARCHAR(100) | | NOT NULL | Họ và tên |
 | `cccd` | VARCHAR(12) | | UNIQUE, NULLABLE | CMND/CCCD (Trẻ em có thể Null) |
+| `so_dien_thoai` | VARCHAR(15) | | NULLABLE | Số điện thoại liên hệ |
 | `ngay_sinh` | DATE | | NOT NULL | Ngày sinh |
 | `gioi_tinh` | ENUM | | 'NAM', 'NU', 'KHAC' | Giới tính |
 | `quan_he` | VARCHAR(50) | | NOT NULL | Quan hệ với chủ hộ (Con, Vợ,...) |
@@ -114,6 +118,9 @@ CREATE TABLE ho_khau (
     ma_ho_khau VARCHAR(20) NOT NULL UNIQUE,
     ten_chu_ho VARCHAR(100) NOT NULL,
     dien_tich DECIMAL(10,2) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'Đang ở',
+    so_nguoi INT NOT NULL DEFAULT 0,
+    phuong_tien VARCHAR(255) NOT NULL DEFAULT 'Chưa cập nhật',
     ngay_lap DATE NOT NULL
 ) ENGINE=InnoDB;
 
@@ -134,6 +141,7 @@ CREATE TABLE nhan_khau (
     ho_khau_id INT NOT NULL,
     ho_ten VARCHAR(100) NOT NULL,
     cccd VARCHAR(12) UNIQUE,
+    so_dien_thoai VARCHAR(15),
     ngay_sinh DATE NOT NULL,
     gioi_tinh ENUM('NAM', 'NU', 'KHAC') NOT NULL,
     quan_he VARCHAR(50) NOT NULL,

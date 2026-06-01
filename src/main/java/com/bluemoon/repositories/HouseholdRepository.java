@@ -3,161 +3,186 @@ package com.bluemoon.repositories;
 import com.bluemoon.models.HoKhau;
 import com.bluemoon.utils.DBConnection;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
 public class HouseholdRepository {
+    private static volatile boolean schemaReady;
 
     public List<HoKhau> findAll() {
-        List<HoKhau> list = new ArrayList<>();
-        String sql = "SELECT * FROM ho_khau ORDER BY id DESC";
-
-        try (Connection conn = DBConnection.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql);
-                ResultSet rs = pstmt.executeQuery()) {
-
-            while (rs.next()) {
-                HoKhau hk = new HoKhau(
-                        rs.getInt("id"),
-                        rs.getString("ma_ho_khau"),
-                        rs.getString("ten_chu_ho"),
-                        rs.getBigDecimal("dien_tich"),
-                        rs.getDate("ngay_lap").toLocalDate());
-                list.add(hk);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return list;
+        ensureExtendedSchema();
+        return query("SELECT * FROM ho_khau ORDER BY id DESC", List.of());
     }
 
     public boolean isMaHoKhauExists(String maHoKhau) {
-        String sql = "SELECT COUNT(*) FROM ho_khau WHERE ma_ho_khau = ?";
+        return isMaHoKhauExists(maHoKhau, null);
+    }
+
+    public boolean isMaHoKhauExists(String maHoKhau, Integer excludedId) {
+        ensureExtendedSchema();
+        String sql = "SELECT COUNT(*) FROM ho_khau WHERE ma_ho_khau = ?" + (excludedId == null ? "" : " AND id <> ?");
         try (Connection conn = DBConnection.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, maHoKhau);
+            if (excludedId != null) pstmt.setInt(2, excludedId);
             try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1) > 0;
-                }
+                return rs.next() && rs.getInt(1) > 0;
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
-        return false;
     }
 
     public HoKhau findByMaHoKhau(String maHoKhau) {
-        String sql = "SELECT * FROM ho_khau WHERE ma_ho_khau = ?";
-        try (Connection conn = DBConnection.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, maHoKhau);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    return new HoKhau(
-                            rs.getInt("id"),
-                            rs.getString("ma_ho_khau"),
-                            rs.getString("ten_chu_ho"),
-                            rs.getBigDecimal("dien_tich"),
-                            rs.getDate("ngay_lap").toLocalDate());
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
+        ensureExtendedSchema();
+        List<HoKhau> result = query("SELECT * FROM ho_khau WHERE ma_ho_khau = ?", List.of(maHoKhau));
+        return result.isEmpty() ? null : result.get(0);
     }
 
     public boolean insert(HoKhau hoKhau) {
-        String sql = "INSERT INTO ho_khau (ma_ho_khau, ten_chu_ho, dien_tich, ngay_lap) VALUES (?, ?, ?, ?)";
+        ensureExtendedSchema();
+        String sql = "INSERT INTO ho_khau (ma_ho_khau, ten_chu_ho, dien_tich, status, so_nguoi, phuong_tien, ngay_lap) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, hoKhau.getMaHoKhau());
-            pstmt.setString(2, hoKhau.getTenChuHo());
-            pstmt.setBigDecimal(3, hoKhau.getDienTich());
-            pstmt.setDate(4, Date.valueOf(hoKhau.getNgayLap()));
-
-            int rowsAffected = pstmt.executeUpdate();
-            return rowsAffected > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public boolean update(HoKhau hoKhau) {
-        String sql = "UPDATE ho_khau SET ma_ho_khau = ?, ten_chu_ho = ?, dien_tich = ?, ngay_lap = ? WHERE id = ?";
-        try (Connection conn = DBConnection.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, hoKhau.getMaHoKhau());
-            pstmt.setString(2, hoKhau.getTenChuHo());
-            pstmt.setBigDecimal(3, hoKhau.getDienTich());
-            pstmt.setDate(4, Date.valueOf(hoKhau.getNgayLap()));
-            pstmt.setInt(5, hoKhau.getId());
-
+            setFields(pstmt, hoKhau);
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
-        return false;
+    }
+
+    public boolean update(HoKhau hoKhau) {
+        ensureExtendedSchema();
+        String sql = "UPDATE ho_khau SET ma_ho_khau = ?, ten_chu_ho = ?, dien_tich = ?, status = ?, so_nguoi = ?, phuong_tien = ?, ngay_lap = ? WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection();
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            setFields(pstmt, hoKhau);
+            pstmt.setInt(8, hoKhau.getId());
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public boolean delete(int id) {
-        String sql = "DELETE FROM ho_khau WHERE id = ?";
         try (Connection conn = DBConnection.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                PreparedStatement pstmt = conn.prepareStatement("DELETE FROM ho_khau WHERE id = ?")) {
             pstmt.setInt(1, id);
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
-        return false;
     }
 
-    public List<HoKhau> search(String maHoKhau, String tenChuHo, String dienTich, java.time.LocalDate ngayLap) {
-        List<HoKhau> list = new ArrayList<>();
+    public List<HoKhau> search(String ma, String ten, String dienTich, String trangThai, String soNguoi,
+            String phuongTien) {
+        ensureExtendedSchema();
         StringBuilder sql = new StringBuilder("SELECT * FROM ho_khau WHERE 1=1");
         List<Object> params = new ArrayList<>();
-
-        if (maHoKhau != null && !maHoKhau.trim().isEmpty()) {
-            sql.append(" AND ma_ho_khau LIKE ?");
-            params.add("%" + maHoKhau.trim() + "%");
-        }
-        if (tenChuHo != null && !tenChuHo.trim().isEmpty()) {
-            sql.append(" AND ten_chu_ho LIKE ?");
-            params.add("%" + tenChuHo.trim() + "%");
-        }
-        if (dienTich != null && !dienTich.trim().isEmpty()) {
+        addLike(sql, params, "ma_ho_khau", ma);
+        addLike(sql, params, "ten_chu_ho", ten);
+        if (hasText(dienTich)) {
             sql.append(" AND dien_tich = ?");
             params.add(new java.math.BigDecimal(dienTich.trim()));
         }
-        if (ngayLap != null) {
-            sql.append(" AND ngay_lap = ?");
-            params.add(Date.valueOf(ngayLap));
+        if (hasText(trangThai)) {
+            sql.append(" AND status = ?");
+            params.add(trangThai.trim());
         }
+        if (hasText(soNguoi)) {
+            sql.append(" AND so_nguoi = ?");
+            params.add(Integer.parseInt(soNguoi.trim()));
+        }
+        addLike(sql, params, "phuong_tien", phuongTien);
         sql.append(" ORDER BY id DESC");
+        return query(sql.toString(), params);
+    }
 
+    private List<HoKhau> query(String sql, List<Object> params) {
+        List<HoKhau> list = new ArrayList<>();
         try (Connection conn = DBConnection.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
-            for (int i = 0; i < params.size(); i++) {
-                pstmt.setObject(i + 1, params.get(i));
-            }
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            for (int i = 0; i < params.size(); i++) pstmt.setObject(i + 1, params.get(i));
             try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    list.add(new HoKhau(
-                            rs.getInt("id"),
-                            rs.getString("ma_ho_khau"),
-                            rs.getString("ten_chu_ho"),
-                            rs.getBigDecimal("dien_tich"),
-                            rs.getDate("ngay_lap").toLocalDate()));
-                }
+                while (rs.next()) list.add(map(rs));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return list;
+    }
+
+    private HoKhau map(ResultSet rs) throws SQLException {
+        return new HoKhau(rs.getInt("id"), rs.getString("ma_ho_khau"), rs.getString("ten_chu_ho"),
+                rs.getBigDecimal("dien_tich"), rs.getString("status"), rs.getInt("so_nguoi"),
+                rs.getString("phuong_tien"), rs.getDate("ngay_lap").toLocalDate());
+    }
+
+    private void setFields(PreparedStatement pstmt, HoKhau hoKhau) throws SQLException {
+        pstmt.setString(1, hoKhau.getMaHoKhau());
+        pstmt.setString(2, hoKhau.getTenChuHo());
+        pstmt.setBigDecimal(3, hoKhau.getDienTich());
+        pstmt.setString(4, hoKhau.getTrangThai());
+        pstmt.setInt(5, hoKhau.getSoNguoi());
+        pstmt.setString(6, hoKhau.getPhuongTien());
+        pstmt.setDate(7, Date.valueOf(hoKhau.getNgayLap()));
+    }
+
+    private void addLike(StringBuilder sql, List<Object> params, String column, String value) {
+        if (hasText(value)) {
+            sql.append(" AND ").append(column).append(" LIKE ?");
+            params.add("%" + value.trim() + "%");
+        }
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.trim().isEmpty();
+    }
+
+    private synchronized void ensureExtendedSchema() {
+        if (schemaReady) return;
+        try (Connection conn = DBConnection.getConnection()) {
+            boolean addedPeopleColumn = false;
+            if (!hasColumn(conn, "status")) {
+                execute(conn, "ALTER TABLE ho_khau ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'Đang ở' AFTER dien_tich");
+            }
+            if (!hasColumn(conn, "so_nguoi")) {
+                execute(conn, "ALTER TABLE ho_khau ADD COLUMN so_nguoi INT NOT NULL DEFAULT 0 AFTER status");
+                addedPeopleColumn = true;
+            }
+            if (!hasColumn(conn, "phuong_tien")) {
+                execute(conn, "ALTER TABLE ho_khau ADD COLUMN phuong_tien VARCHAR(255) NOT NULL DEFAULT 'Chưa cập nhật' AFTER so_nguoi");
+            }
+            if (addedPeopleColumn) {
+                execute(conn, "UPDATE ho_khau hk LEFT JOIN (SELECT ho_khau_id, COUNT(*) AS total FROM nhan_khau GROUP BY ho_khau_id) nk ON nk.ho_khau_id = hk.id SET hk.so_nguoi = COALESCE(nk.total, 0)");
+            }
+            schemaReady = true;
+        } catch (SQLException e) {
+            throw new IllegalStateException("Không thể mở rộng bảng ho_khau mà vẫn giữ dữ liệu hiện có.", e);
+        }
+    }
+
+    private boolean hasColumn(Connection conn, String column) throws SQLException {
+        DatabaseMetaData metaData = conn.getMetaData();
+        try (ResultSet columns = metaData.getColumns(conn.getCatalog(), null, "ho_khau", column)) {
+            return columns.next();
+        }
+    }
+
+    private void execute(Connection conn, String sql) throws SQLException {
+        try (Statement statement = conn.createStatement()) {
+            statement.executeUpdate(sql);
+        }
     }
 }

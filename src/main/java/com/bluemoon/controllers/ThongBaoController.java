@@ -1,75 +1,50 @@
 package com.bluemoon.controllers;
 
 import com.bluemoon.models.ThongBao;
+import com.bluemoon.models.UserGroup;
+import com.bluemoon.repositories.PermissionRepository;
 import com.bluemoon.services.ThongBaoService;
+import com.bluemoon.utils.ExcelExporter;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.FlowPane;
-import javafx.geometry.Insets;
 import javafx.stage.FileChooser;
-import javafx.stage.Window;
+import javafx.util.StringConverter;
 
 import java.io.File;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import javafx.geometry.Pos;
 
 public class ThongBaoController {
+    private static final List<String> STATUSES = List.of("Đã phát hành", "Nháp", "Ẩn");
 
-    @FXML
-    private TextField txtTitle;
-    @FXML
-    private Button btnChooseFile;
-    @FXML
-    private Label lblSelectedFile;
-    @FXML
-    private DatePicker dpNgayBanHanh;
-    @FXML
-    private ComboBox<String> cbStatus;
-    @FXML
-    private FlowPane paneGroups;
-    @FXML
-    private Button btnResetForm;
-    @FXML
-    private Button btnAddNotification;
+    @FXML private Button btnSearchNotification;
+    @FXML private Button btnAddNotification;
+    @FXML private Button btnExportExcel;
+    @FXML private Button btnResetSearch;
+    @FXML private TableView<ThongBao> tableThongBao;
+    @FXML private TableColumn<ThongBao, Number> colStt;
+    @FXML private TableColumn<ThongBao, String> colTitle;
+    @FXML private TableColumn<ThongBao, String> colFile;
+    @FXML private TableColumn<ThongBao, LocalDate> colNgayBanHanh;
+    @FXML private TableColumn<ThongBao, String> colGroups;
+    @FXML private TableColumn<ThongBao, String> colStatus;
+    @FXML private TableColumn<ThongBao, Void> colActions;
 
-    @FXML
-    private TextField txtSearchTitle;
-    @FXML
-    private DatePicker dpSearchDate;
-    @FXML
-    private ComboBox<String> cbSearchStatus;
-    @FXML
-    private Button btnResetSearch;
-    @FXML
-    private Button btnSearchNotification;
-
-    @FXML
-    private TableView<ThongBao> tableThongBao;
-    @FXML
-    private TableColumn<ThongBao, Number> colStt;
-    @FXML
-    private TableColumn<ThongBao, String> colTitle;
-    @FXML
-    private TableColumn<ThongBao, String> colFile;
-    @FXML
-    private TableColumn<ThongBao, LocalDate> colNgayBanHanh;
-    @FXML
-    private TableColumn<ThongBao, String> colStatus;
-    @FXML
-    private TableColumn<ThongBao, Void> colActions;
-
-    private final ThongBaoService thongBaoService = new ThongBaoService();
-    private String selectedFilePath;
+    private final ThongBaoService service = new ThongBaoService();
+    private final PermissionRepository permissionRepository = new PermissionRepository();
+    private final ExcelExporter excelExporter = new ExcelExporter();
     private DashboardController dashboardController;
 
     public void setDashboardController(DashboardController dashboardController) {
@@ -78,334 +53,163 @@ public class ThongBaoController {
 
     @FXML
     public void initialize() {
-        cbStatus.setItems(FXCollections.observableArrayList("Đã xuất bản", "Chưa xuất bản"));
-        cbSearchStatus.setItems(FXCollections.observableArrayList("Đã xuất bản", "Chưa xuất bản"));
-
-        colStt.setCellValueFactory(
-                cellData -> new ReadOnlyObjectWrapper<>(tableThongBao.getItems().indexOf(cellData.getValue()) + 1));
+        colStt.setCellValueFactory(row -> new ReadOnlyObjectWrapper<>(tableThongBao.getItems().indexOf(row.getValue()) + 1));
         colTitle.setCellValueFactory(new PropertyValueFactory<>("tenThongBao"));
-        colFile.setCellValueFactory(
-                cellData -> new ReadOnlyStringWrapper(formatFileDisplay(cellData.getValue().getFilePath())));
+        colFile.setCellValueFactory(row -> new ReadOnlyStringWrapper(fileName(row.getValue().getFilePath())));
         colNgayBanHanh.setCellValueFactory(new PropertyValueFactory<>("ngayBanHanh"));
+        colGroups.setCellValueFactory(new PropertyValueFactory<>("nhomNhan"));
         colStatus.setCellValueFactory(new PropertyValueFactory<>("trangThai"));
-
         colActions.setCellFactory(col -> actionCell());
-
         tableThongBao.setItems(FXCollections.observableArrayList());
-        
-        loadGroupCheckBoxes();
+        tableThongBao.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        setupButton(btnSearchNotification, "#0ea5e9", "#0284c7");
+        setupButton(btnAddNotification, "#22c55e", "#16a34a");
+        setupButton(btnExportExcel, "#6366f1", "#4f46e5");
+        setupButton(btnResetSearch, "#64748b", "#475569");
         refreshTable();
-        resetFormFields();
     }
 
-    private void loadGroupCheckBoxes() {
-        paneGroups.getChildren().clear();
-        com.bluemoon.repositories.PermissionRepository permRepo = new com.bluemoon.repositories.PermissionRepository();
-        List<com.bluemoon.models.UserGroup> groups = permRepo.findGroups("");
-        for (com.bluemoon.models.UserGroup g : groups) {
-            if ("Trống".equalsIgnoreCase(g.getTenNhom())) continue; // Skip default empty group
-            CheckBox cb = new CheckBox(g.getTenNhom());
-            cb.setUserData(g.getId());
-            cb.setStyle("-fx-text-fill: #334155; -fx-padding: 0 10 0 0; -fx-font-weight: bold;");
-            paneGroups.getChildren().add(cb);
+    @FXML void handleShowAddDialog(ActionEvent event) { showEditDialog(null); }
+    @FXML void handleResetSearch(ActionEvent event) { refreshTable(); }
+
+    @FXML
+    void handleShowSearchDialog(ActionEvent event) {
+        SearchForm form = new SearchForm(groups());
+        Dialog<ButtonType> dialog = createDialog("Tìm kiếm thông báo", form.grid);
+        if (dialog.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+            Integer groupId = form.group.getValue() == null ? null : form.group.getValue().getId();
+            String status = "Tất cả".equals(form.status.getValue()) ? null : form.status.getValue();
+            tableThongBao.getItems().setAll(service.searchNotifications(form.title.getText(), form.date.getValue(), status, groupId));
         }
     }
 
     @FXML
-    void handleChooseFile(ActionEvent event) {
+    void handleExportExcel(ActionEvent event) {
         FileChooser chooser = new FileChooser();
-        chooser.setTitle("Chọn file thông báo");
-        File file = chooser.showOpenDialog(getWindow());
-        if (file != null) {
-            selectedFilePath = file.getAbsolutePath();
-            lblSelectedFile.setText(file.getName());
-        }
+        chooser.setTitle("Lưu danh sách thông báo");
+        chooser.setInitialFileName("DanhSachThongBao_BlueMoon.xlsx");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Excel Files", "*.xlsx"));
+        File file = chooser.showSaveDialog(tableThongBao.getScene().getWindow());
+        if (file == null) return;
+        if (excelExporter.exportNotificationsToExcel(service.getAllNotifications(), file.getAbsolutePath())) {
+            showAlert(Alert.AlertType.INFORMATION, "Xuất danh sách thông báo thành công.");
+        } else showAlert(Alert.AlertType.ERROR, "Không thể xuất danh sách thông báo.");
     }
 
-    @FXML
-    void handleAddNotification(ActionEvent event) {
-        try {
-            String title = txtTitle.getText().trim();
-            LocalDate ngayBanHanh = dpNgayBanHanh.getValue();
-            String trangThai = cbStatus.getValue();
-            
-            // Read target groups
-            List<Integer> selectedGroupIds = new java.util.ArrayList<>();
-            for (Node node : paneGroups.getChildren()) {
-                if (node instanceof CheckBox) {
-                    CheckBox cb = (CheckBox) node;
-                    if (cb.isSelected()) {
-                        selectedGroupIds.add((Integer) cb.getUserData());
-                    }
-                }
-            }
-
-            if (title.isEmpty()) {
-                showAlert(Alert.AlertType.WARNING, "Vui lòng nhập tên thông báo.");
-                return;
-            }
-            if (ngayBanHanh == null) {
-                showAlert(Alert.AlertType.WARNING, "Vui lòng chọn ngày ban hành.");
-                return;
-            }
-            if (trangThai == null || trangThai.isEmpty()) {
-                showAlert(Alert.AlertType.WARNING, "Vui lòng chọn trạng thái.");
-                return;
-            }
-            if (selectedGroupIds.isEmpty()) {
-                showAlert(Alert.AlertType.WARNING, "Vui lòng chọn ít nhất một nhóm nhận thông báo.");
-                return;
-            }
-
-            ThongBao thongBao = new ThongBao();
-            thongBao.setTenThongBao(title);
-            thongBao.setFilePath(selectedFilePath);
-            thongBao.setNgayBanHanh(ngayBanHanh);
-            thongBao.setTrangThai(trangThai);
-
-            boolean saved = thongBaoService.addNotification(thongBao, selectedGroupIds);
-            if (saved) {
-                showAlert(Alert.AlertType.INFORMATION, "Thêm thông báo thành công.");
-                resetFormFields();
+    private void showEditDialog(ThongBao existing) {
+        boolean adding = existing == null;
+        NotificationForm form = new NotificationForm(groups());
+        if (!adding) form.populate(existing, service.getGroupIdsByNotification(existing.getId()));
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle(adding ? "Thêm thông báo" : "Chỉnh sửa thông báo");
+        dialog.initOwner(tableThongBao.getScene().getWindow());
+        ButtonType ok = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(ok, ButtonType.CANCEL);
+        dialog.getDialogPane().setContent(form.grid);
+        ((Button) dialog.getDialogPane().lookupButton(ok)).addEventFilter(ActionEvent.ACTION, event -> {
+            try {
+                ThongBao item = adding ? new ThongBao() : existing;
+                item.setTenThongBao(form.title.getText().trim());
+                item.setFilePath(form.filePath);
+                item.setNgayBanHanh(form.date.getValue());
+                item.setTrangThai(form.status.getValue());
+                List<Integer> groupIds = form.selectedGroupIds();
+                validate(item, groupIds);
+                boolean saved = adding ? service.addNotification(item, groupIds) : service.updateNotification(item, groupIds);
+                if (!saved) throw new IllegalArgumentException("Không thể lưu thông báo.");
                 refreshTable();
-                if (dashboardController != null) {
-                    dashboardController.refreshNotifications();
-                }
-            } else {
-                showAlert(Alert.AlertType.ERROR, "Không thể thêm thông báo. Vui lòng thử lại.");
-            }
-        } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "Đã có lỗi xảy ra: " + e.getMessage());
-        }
-    }
-
-    @FXML
-    void handleResetForm(ActionEvent event) {
-        resetFormFields();
-    }
-
-    @FXML
-    void handleSearchNotification(ActionEvent event) {
-        String title = txtSearchTitle.getText().trim();
-        LocalDate ngayBanHanh = dpSearchDate.getValue();
-        String trangThai = cbSearchStatus.getValue();
-        List<ThongBao> result = thongBaoService.searchNotifications(title, ngayBanHanh, trangThai);
-        tableThongBao.getItems().setAll(result);
-    }
-
-    @FXML
-    void handleResetSearch(ActionEvent event) {
-        txtSearchTitle.clear();
-        dpSearchDate.setValue(null);
-        cbSearchStatus.setValue(null);
-        refreshTable();
-    }
-
-    private void refreshTable() {
-        tableThongBao.getItems().setAll(thongBaoService.getAllNotifications());
-    }
-
-    private void resetFormFields() {
-        txtTitle.clear();
-        selectedFilePath = null;
-        lblSelectedFile.setText("Chưa chọn file");
-        dpNgayBanHanh.setValue(null);
-        cbStatus.setValue(null);
-        for (Node node : paneGroups.getChildren()) {
-            if (node instanceof CheckBox) {
-                ((CheckBox) node).setSelected(false);
-            }
-        }
-    }
-
-    private void showEditDialog(ThongBao item) {
-        Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("Sửa thông báo");
-        dialog.setHeaderText(null);
-
-        ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-        dialog.getDialogPane().getButtonTypes().addAll(okButton, cancelButton);
-
-        GridPane grid = new GridPane();
-        grid.setHgap(18);
-        grid.setVgap(14);
-        grid.setPadding(new Insets(20, 20, 10, 20));
-
-        TextField editTitle = new TextField(item.getTenThongBao());
-        editTitle.setPrefWidth(360);
-        Button chooseEditFile = new Button("Chọn file");
-        chooseEditFile.setStyle(
-                "-fx-background-color: #34495e; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 14;");
-        Label lblEditFile = new Label(formatFileDisplay(item.getFilePath()));
-        DatePicker editDate = new DatePicker(item.getNgayBanHanh());
-        ComboBox<String> editStatus = new ComboBox<>(FXCollections.observableArrayList("Đã xuất bản", "Chưa xuất bản"));
-        editStatus.setValue(item.getTrangThai());
-
-        final String[] editFilePath = { item.getFilePath() };
-        chooseEditFile.setOnAction(evt -> {
-            FileChooser chooser = new FileChooser();
-            chooser.setTitle("Chọn file thông báo");
-            File result = chooser.showOpenDialog(getWindow());
-            if (result != null) {
-                editFilePath[0] = result.getAbsolutePath();
-                lblEditFile.setText(result.getName());
+                refreshDashboard();
+            } catch (IllegalArgumentException e) {
+                showAlert(Alert.AlertType.WARNING, e.getMessage());
+                event.consume();
             }
         });
-
-        // Generate editing group check boxes
-        FlowPane editPaneGroups = new FlowPane(15, 5);
-        editPaneGroups.setPrefWrapLength(360);
-        com.bluemoon.repositories.PermissionRepository permRepo = new com.bluemoon.repositories.PermissionRepository();
-        List<com.bluemoon.models.UserGroup> groups = permRepo.findGroups("");
-        List<Integer> associatedGroupIds = thongBaoService.getGroupIdsByNotification(item.getId());
-        for (com.bluemoon.models.UserGroup g : groups) {
-            if ("Trống".equalsIgnoreCase(g.getTenNhom())) continue;
-            CheckBox cb = new CheckBox(g.getTenNhom());
-            cb.setUserData(g.getId());
-            cb.setStyle("-fx-text-fill: #334155;");
-            if (associatedGroupIds.contains(g.getId())) {
-                cb.setSelected(true);
-            }
-            editPaneGroups.getChildren().add(cb);
-        }
-
-        grid.add(new Label("Tên thông báo"), 0, 0);
-        grid.add(editTitle, 1, 0, 2, 1);
-        grid.add(new Label("File thông báo"), 0, 1);
-        HBox fileBox = new HBox(10, chooseEditFile, lblEditFile);
-        grid.add(fileBox, 1, 1, 2, 1);
-        grid.add(new Label("Ngày ban hành"), 0, 2);
-        grid.add(editDate, 1, 2);
-        grid.add(new Label("Trạng thái"), 0, 3);
-        grid.add(editStatus, 1, 3);
-        grid.add(new Label("Nhóm nhận"), 0, 4);
-        grid.add(editPaneGroups, 1, 4, 2, 1);
-
-        dialog.getDialogPane().setContent(grid);
-
-        Optional<ButtonType> result = dialog.showAndWait();
-        if (result.isPresent() && result.get() == okButton) {
-            if (editTitle.getText().trim().isEmpty()) {
-                showAlert(Alert.AlertType.WARNING, "Tên thông báo không được để trống.");
-                return;
-            }
-            if (editDate.getValue() == null) {
-                showAlert(Alert.AlertType.WARNING, "Vui lòng chọn ngày ban hành.");
-                return;
-            }
-            if (editStatus.getValue() == null || editStatus.getValue().trim().isEmpty()) {
-                showAlert(Alert.AlertType.WARNING, "Vui lòng chọn trạng thái.");
-                return;
-            }
-
-            List<Integer> selectedGroupIds = new java.util.ArrayList<>();
-            for (Node node : editPaneGroups.getChildren()) {
-                if (node instanceof CheckBox) {
-                    CheckBox cb = (CheckBox) node;
-                    if (cb.isSelected()) {
-                        selectedGroupIds.add((Integer) cb.getUserData());
-                    }
-                }
-            }
-            if (selectedGroupIds.isEmpty()) {
-                showAlert(Alert.AlertType.WARNING, "Vui lòng chọn ít nhất một nhóm nhận thông báo.");
-                return;
-            }
-
-            item.setTenThongBao(editTitle.getText().trim());
-            item.setFilePath(editFilePath[0]);
-            item.setNgayBanHanh(editDate.getValue());
-            item.setTrangThai(editStatus.getValue());
-
-            boolean updated = thongBaoService.updateNotification(item, selectedGroupIds);
-            if (updated) {
-                showAlert(Alert.AlertType.INFORMATION, "Cập nhật thông báo thành công.");
-                refreshTable();
-                if (dashboardController != null) {
-                    dashboardController.refreshNotifications();
-                }
-            } else {
-                showAlert(Alert.AlertType.ERROR, "Không thể cập nhật thông báo. Vui lòng thử lại.");
-            }
-        }
+        dialog.showAndWait();
     }
 
-    private void handleDeleteNotification(ThongBao item) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Xác nhận xóa");
-        alert.setHeaderText(null);
-        alert.setContentText("Bạn có chắc chắn muốn xóa không?");
-
-        ButtonType yesButton = new ButtonType("Có", ButtonBar.ButtonData.YES);
-        ButtonType noButton = new ButtonType("Không", ButtonBar.ButtonData.NO);
-        alert.getButtonTypes().setAll(yesButton, noButton);
-
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == yesButton) {
-            boolean deleted = thongBaoService.deleteNotification(item.getId());
-            if (deleted) {
-                showAlert(Alert.AlertType.INFORMATION, "Xóa thông báo thành công.");
-                refreshTable();
-                if (dashboardController != null) {
-                    dashboardController.refreshNotifications();
-                }
-            } else {
-                showAlert(Alert.AlertType.ERROR, "Không thể xóa thông báo. Vui lòng thử lại.");
-            }
-        }
+    private void validate(ThongBao item, List<Integer> groups) {
+        if (item.getTenThongBao().isBlank()) throw new IllegalArgumentException("Tên thông báo không được để trống.");
+        if (item.getNgayBanHanh() == null) throw new IllegalArgumentException("Vui lòng chọn ngày ban hành.");
+        if (item.getTrangThai() == null) throw new IllegalArgumentException("Vui lòng chọn trạng thái.");
+        if (groups.isEmpty()) throw new IllegalArgumentException("Vui lòng chọn ít nhất một nhóm nhận.");
     }
 
-    private String formatFileDisplay(String path) {
-        if (path == null || path.isBlank()) {
-            return "Chưa có file";
-        }
-        File file = new File(path);
-        return file.getName().isBlank() ? path : file.getName();
+    private List<UserGroup> groups() {
+        return permissionRepository.findGroups("").stream().filter(group -> !"Trống".equalsIgnoreCase(group.getTenNhom())).toList();
     }
 
-    private void showAlert(Alert.AlertType type, String message) {
-        Alert alert = new Alert(type);
-        alert.setTitle("Thông báo");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-
-    private Window getWindow() {
-        return btnChooseFile.getScene().getWindow();
-    }
+    private void refreshTable() { tableThongBao.getItems().setAll(service.getAllNotifications()); }
+    private void refreshDashboard() { if (dashboardController != null) dashboardController.refreshNotifications(); }
 
     private TableCell<ThongBao, Void> actionCell() {
         return new TableCell<>() {
-            private final Button editButton = createActionButton("✎");
-            private final Button deleteButton = createActionButton("🗑");
-            private final HBox box = new HBox(8, editButton, deleteButton);
-
+            private final Button edit = actionButton("Sửa");
+            private final Button delete = actionButton("Xóa");
+            private final HBox box = new HBox(6, edit, delete);
             {
                 box.setAlignment(Pos.CENTER);
-                editButton.setOnAction(event -> showEditDialog(getTableView().getItems().get(getIndex())));
-                deleteButton.setOnAction(event -> handleDeleteNotification(getTableView().getItems().get(getIndex())));
+                edit.setOnAction(event -> showEditDialog(getTableView().getItems().get(getIndex())));
+                delete.setOnAction(event -> delete(getTableView().getItems().get(getIndex())));
             }
-
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                setGraphic(empty ? null : box);
-                setAlignment(Pos.CENTER);
-            }
+            @Override protected void updateItem(Void item, boolean empty) { super.updateItem(item, empty); setGraphic(empty ? null : box); }
         };
     }
 
-    private Button createActionButton(String content) {
-        Button button = new Button(content);
-        button.setMinSize(34, 30);
-        button.setStyle(
-                "-fx-background-color: #eef3f8; -fx-background-radius: 7; -fx-font-weight: bold; -fx-cursor: hand;");
-        button.setOnMouseEntered(event -> button.setStyle(
-                "-fx-background-color: #d9e7f5; -fx-background-radius: 7; -fx-font-weight: bold; -fx-cursor: hand;"));
-        button.setOnMouseExited(event -> button.setStyle(
-                "-fx-background-color: #eef3f8; -fx-background-radius: 7; -fx-font-weight: bold; -fx-cursor: hand;"));
-        return button;
+    private void delete(ThongBao item) {
+        ButtonType delete = new ButtonType("Xóa", ButtonBar.ButtonData.OK_DONE);
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Bạn có chắc muốn xóa thông báo này?", ButtonType.CANCEL, delete);
+        alert.setHeaderText(null);
+        if (alert.showAndWait().orElse(ButtonType.CANCEL) == delete && service.deleteNotification(item.getId())) {
+            refreshTable();
+            refreshDashboard();
+        }
     }
+
+    private Dialog<ButtonType> createDialog(String title, GridPane content) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle(title);
+        dialog.initOwner(tableThongBao.getScene().getWindow());
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        dialog.getDialogPane().setContent(content);
+        return dialog;
+    }
+
+    private Button actionButton(String text) { Button button = new Button(text); button.setMinSize(44, 28); button.setStyle("-fx-background-color: #eef3f8; -fx-background-radius: 7; -fx-cursor: hand;"); return button; }
+    private void setupButton(Button button, String color, String hover) { String base = "-fx-background-color: " + color + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 7; -fx-cursor: hand;"; String active = base.replace(color, hover); button.setStyle(base); button.setOnMouseEntered(e -> button.setStyle(active)); button.setOnMouseExited(e -> button.setStyle(base)); }
+    private String fileName(String path) { return path == null || path.isBlank() ? "Chưa có file" : new File(path).getName(); }
+    private void showAlert(Alert.AlertType type, String message) { Alert alert = new Alert(type, message, ButtonType.OK); alert.setHeaderText(null); alert.showAndWait(); }
+
+    private class NotificationForm {
+        final GridPane grid = grid();
+        final TextField title = new TextField();
+        final Label fileLabel = new Label("Chưa chọn file");
+        final DatePicker date = new DatePicker();
+        final ComboBox<String> status = new ComboBox<>();
+        final FlowPane groupPane = new FlowPane(12, 6);
+        String filePath;
+        NotificationForm(List<UserGroup> groups) {
+            title.setPromptText("Nhập tiêu đề thông báo");
+            Button choose = new Button("Chọn file");
+            choose.setOnAction(e -> chooseFile());
+            status.getItems().addAll(STATUSES);
+            for (UserGroup group : groups) { CheckBox box = new CheckBox(group.getTenNhom()); box.setUserData(group.getId()); groupPane.getChildren().add(box); }
+            add(grid, "Tên thông báo", title, 0); add(grid, "File đính kèm", new HBox(8, choose, fileLabel), 1);
+            add(grid, "Ngày ban hành", date, 2); add(grid, "Nhóm nhận", groupPane, 3); add(grid, "Trạng thái", status, 4);
+        }
+        void chooseFile() { FileChooser chooser = new FileChooser(); chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Tệp hỗ trợ", "*.pdf", "*.doc", "*.docx", "*.xlsx", "*.jpg", "*.png")); File file = chooser.showOpenDialog(tableThongBao.getScene().getWindow()); if (file != null) { filePath = file.getAbsolutePath(); fileLabel.setText(file.getName()); } }
+        void populate(ThongBao item, List<Integer> ids) { title.setText(item.getTenThongBao()); filePath = item.getFilePath(); fileLabel.setText(fileName(filePath)); date.setValue(item.getNgayBanHanh()); status.setValue(item.getTrangThai()); for (Node node : groupPane.getChildren()) if (node instanceof CheckBox box) box.setSelected(ids.contains((Integer) box.getUserData())); }
+        List<Integer> selectedGroupIds() { List<Integer> ids = new ArrayList<>(); for (Node node : groupPane.getChildren()) if (node instanceof CheckBox box && box.isSelected()) ids.add((Integer) box.getUserData()); return ids; }
+    }
+
+    private static class SearchForm {
+        final GridPane grid = grid();
+        final TextField title = new TextField();
+        final DatePicker date = new DatePicker();
+        final ComboBox<UserGroup> group = new ComboBox<>();
+        final ComboBox<String> status = new ComboBox<>();
+        SearchForm(List<UserGroup> groups) { title.setPromptText("Nhập tiêu đề thông báo"); group.getItems().addAll(groups); group.setConverter(new StringConverter<>() { @Override public String toString(UserGroup value) { return value == null ? "" : value.getTenNhom(); } @Override public UserGroup fromString(String value) { return null; } }); group.setPromptText("Tất cả"); status.getItems().addAll("Tất cả", "Đã phát hành", "Nháp", "Ẩn"); status.setValue("Tất cả"); add(grid, "Tên thông báo", title, 0); add(grid, "Ngày ban hành", date, 1); add(grid, "Nhóm nhận", group, 2); add(grid, "Trạng thái", status, 3); }
+    }
+
+    private static GridPane grid() { GridPane grid = new GridPane(); grid.setHgap(14); grid.setVgap(10); grid.setPadding(new Insets(18)); return grid; }
+    private static void add(GridPane grid, String label, Node field, int row) { grid.add(new Label(label), 0, row); grid.add(field, 1, row); }
 }

@@ -1,126 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<!-- Redesigned by Antigravity -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Tab?>
-<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox prefHeight="650.0" prefWidth="950.0" spacing="15.0" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bluemoon.controllers.ResidentController">
-   <padding>
-      <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
-   </padding>
-
-   <Label text="QUẢN LÝ NHÂN KHẨU" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-padding: 0 0 5 0;" />
-
-   <TabPane tabClosingPolicy="UNAVAILABLE" style="-fx-background-color: transparent;">
-      <tabs>
-         <Tab text="Thêm nhân khẩu">
-            <VBox spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.02), 6, 0, 0, 1);">
-               <padding>
-                  <Insets bottom="15.0" left="20.0" right="20.0" top="15.0" />
-               </padding>
-               <GridPane hgap="20.0" vgap="10.0">
-                  <columnConstraints>
-                     <ColumnConstraints percentWidth="15.0" halignment="RIGHT" />
-                     <ColumnConstraints percentWidth="35.0" hgrow="ALWAYS" />
-                     <ColumnConstraints percentWidth="15.0" halignment="RIGHT" />
-                     <ColumnConstraints percentWidth="35.0" hgrow="ALWAYS" />
-                  </columnConstraints>
-                  
-                  <Label text="ID Hộ khẩu:" style="-fx-text-fill: #334155; -fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                  <TextField fx:id="txtHoKhauId" maxWidth="Infinity" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 6 10;" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-
-                  <Label text="Họ tên:" style="-fx-text-fill: #334155; -fx-font-weight: bold;" GridPane.columnIndex="2" GridPane.rowIndex="0" />
-                  <TextField fx:id="txtHoTen" maxWidth="Infinity" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 6 10;" GridPane.columnIndex="3" GridPane.rowIndex="0" />
-
-                  <Label text="CCCD:" style="-fx-text-fill: #334155; -fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                  <TextField fx:id="txtCccd" maxWidth="Infinity" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 6 10;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-
-                  <Label text="Ngày sinh:" style="-fx-text-fill: #334155; -fx-font-weight: bold;" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-                  <DatePicker fx:id="dpNgaySinh" maxWidth="Infinity" style="-fx-background-color: transparent; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6;" GridPane.columnIndex="3" GridPane.rowIndex="1" />
-
-                  <Label text="Giới tính:" style="-fx-text-fill: #334155; -fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                  <TextField fx:id="txtGioiTinh" maxWidth="Infinity" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 6 10;" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-
-                  <Label text="Quan hệ:" style="-fx-text-fill: #334155; -fx-font-weight: bold;" GridPane.columnIndex="2" GridPane.rowIndex="2" />
-                  <TextField fx:id="txtQuanHe" maxWidth="Infinity" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 6 10;" GridPane.columnIndex="3" GridPane.rowIndex="2" />
-
-                  <Label text="Trạng thái:" style="-fx-text-fill: #334155; -fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-                  <TextField fx:id="txtTrangThai" maxWidth="Infinity" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 6 10;" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-               </GridPane>
-               <HBox alignment="CENTER_RIGHT" spacing="10.0">
-                  <padding>
-                     <Insets bottom="5.0" top="5.0" />
-                  </padding>
-                  <Button fx:id="btnResetAdd" mnemonicParsing="false" onAction="#handleClear" text="Reset" style="-fx-background-color: #64748b; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 18; -fx-background-radius: 6; -fx-cursor: hand;" />
-                  <Button fx:id="btnAddResident" mnemonicParsing="false" onAction="#handleAdd" text="Thêm" style="-fx-background-color: #22c55e; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 18; -fx-background-radius: 6; -fx-cursor: hand;" />
-               </HBox>
-            </VBox>
-         </Tab>
-         <Tab text="Tìm kiếm">
-            <VBox spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.02), 6, 0, 0, 1);">
-               <padding>
-                  <Insets bottom="15.0" left="20.0" right="20.0" top="15.0" />
-               </padding>
-               <GridPane hgap="20.0" vgap="10.0">
-                  <columnConstraints>
-                     <ColumnConstraints percentWidth="15.0" halignment="RIGHT" />
-                     <ColumnConstraints percentWidth="35.0" hgrow="ALWAYS" />
-                     <ColumnConstraints percentWidth="15.0" halignment="RIGHT" />
-                     <ColumnConstraints percentWidth="35.0" hgrow="ALWAYS" />
-                  </columnConstraints>
-                  
-                  <Label text="ID Hộ khẩu:" style="-fx-text-fill: #334155; -fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                  <TextField fx:id="txtSearchHoKhauId" maxWidth="Infinity" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 6 10;" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-
-                  <Label text="Họ tên:" style="-fx-text-fill: #334155; -fx-font-weight: bold;" GridPane.columnIndex="2" GridPane.rowIndex="0" />
-                  <TextField fx:id="txtSearchHoTen" maxWidth="Infinity" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 6 10;" GridPane.columnIndex="3" GridPane.rowIndex="0" />
-
-                  <Label text="CCCD:" style="-fx-text-fill: #334155; -fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                  <TextField fx:id="txtSearchCccd" maxWidth="Infinity" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 6 10;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-
-                  <Label text="Ngày sinh:" style="-fx-text-fill: #334155; -fx-font-weight: bold;" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-                  <DatePicker fx:id="dpSearchNgaySinh" maxWidth="Infinity" style="-fx-background-color: transparent; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6;" GridPane.columnIndex="3" GridPane.rowIndex="1" />
-               </GridPane>
-               <HBox alignment="CENTER_RIGHT" spacing="10.0">
-                  <padding>
-                     <Insets bottom="5.0" top="5.0" />
-                  </padding>
-                  <Button fx:id="btnResetSearch" mnemonicParsing="false" onAction="#handleResetSearch" text="Reset" style="-fx-background-color: #64748b; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 18; -fx-background-radius: 6; -fx-cursor: hand;" />
-                  <Button fx:id="btnSearchResident" mnemonicParsing="false" onAction="#handleSearch" text="Tìm kiếm" style="-fx-background-color: #22c55e; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 18; -fx-background-radius: 6; -fx-cursor: hand;" />
-               </HBox>
-            </VBox>
-         </Tab>
-      </tabs>
-   </TabPane>
-
-   <VBox spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.02), 6, 0, 0, 1);" VBox.vgrow="ALWAYS">
-      <padding>
-         <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
-      </padding>
-      <Label text="Danh sách nhân khẩu" style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1e293b;" />
-      <TableView fx:id="tableNhanKhau" VBox.vgrow="ALWAYS" style="-fx-background-color: white; -fx-background-radius: 6; -fx-border-color: #cbd5e1; -fx-border-radius: 6;">
-         <columns>
-            <TableColumn fx:id="colId" prefWidth="50.0" style="-fx-alignment: CENTER;" text="ID" />
-            <TableColumn fx:id="colHoKhauId" prefWidth="100.0" style="-fx-alignment: CENTER;" text="ID Hộ Khẩu" />
-            <TableColumn fx:id="colHoTen" prefWidth="180.0" text="Họ Tên" />
-            <TableColumn fx:id="colCccd" prefWidth="130.0" text="CCCD" />
-            <TableColumn fx:id="colNgaySinh" prefWidth="110.0" style="-fx-alignment: CENTER;" text="Ngày Sinh" />
-            <TableColumn fx:id="colGioiTinh" prefWidth="90.0" style="-fx-alignment: CENTER;" text="Giới Tính" />
-            <TableColumn fx:id="colQuanHe" prefWidth="90.0" text="Quan Hệ" />
-            <TableColumn fx:id="colTrangThai" prefWidth="110.0" text="Trạng Thái" />
-            <TableColumn fx:id="colHoatDong" prefWidth="120.0" style="-fx-alignment: CENTER;" text="Hoạt động" />
-         </columns>
-      </TableView>
+<VBox prefHeight="650.0" prefWidth="950.0" spacing="15.0" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bluemoon.controllers.ResidentController">
+   <padding><Insets bottom="15.0" left="15.0" right="15.0" top="15.0" /></padding>
+   <Label style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="QUẢN LÝ NHÂN KHẨU" />
+   <VBox spacing="12.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8;" VBox.vgrow="ALWAYS">
+      <padding><Insets bottom="15.0" left="15.0" right="15.0" top="15.0" /></padding>
+      <HBox alignment="CENTER_LEFT" spacing="8.0">
+         <Label style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1e293b;" text="Danh sách nhân khẩu" />
+         <Region HBox.hgrow="ALWAYS" />
+         <Button fx:id="btnSearchResident" onAction="#handleShowSearchDialog" text="Tìm kiếm" />
+         <Button fx:id="btnAddResident" onAction="#handleShowAddDialog" text="+ Thêm" />
+         <Button fx:id="btnExportExcel" onAction="#handleExportExcel" text="Xuất Excel" />
+         <Button fx:id="btnResetSearch" onAction="#handleResetSearch" text="Đặt lại" />
+      </HBox>
+      <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="AS_NEEDED" pannable="true" style="-fx-background-color: transparent;" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
+         <content>
+            <TableView fx:id="tableNhanKhau" prefHeight="560.0" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6;">
+               <columns>
+                  <TableColumn fx:id="colId" minWidth="45.0" prefWidth="50.0" text="ID" />
+                  <TableColumn fx:id="colHoKhauId" minWidth="80.0" prefWidth="90.0" text="ID Hộ Khẩu" />
+                  <TableColumn fx:id="colHoTen" minWidth="150.0" prefWidth="190.0" text="Họ Tên" />
+                  <TableColumn fx:id="colCccd" minWidth="115.0" prefWidth="125.0" text="CCCD" />
+                  <TableColumn fx:id="colSoDienThoai" minWidth="100.0" prefWidth="115.0" text="SĐT" />
+                  <TableColumn fx:id="colNgaySinh" minWidth="100.0" prefWidth="110.0" text="Ngày Sinh" />
+                  <TableColumn fx:id="colGioiTinh" minWidth="75.0" prefWidth="85.0" text="Giới Tính" />
+                  <TableColumn fx:id="colQuanHe" minWidth="90.0" prefWidth="100.0" text="Quan Hệ" />
+                  <TableColumn fx:id="colTrangThai" minWidth="95.0" prefWidth="110.0" text="Trạng Thái" />
+                  <TableColumn fx:id="colHoatDong" minWidth="120.0" prefWidth="135.0" text="Hoạt Động" />
+               </columns>
+            </TableView>
+         </content>
+      </ScrollPane>
    </VBox>
 </VBox>
