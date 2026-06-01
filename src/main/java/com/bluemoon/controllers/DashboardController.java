@@ -87,6 +87,8 @@ public class DashboardController {
     private Button btnPhanQuyen;
     @FXML
     private Button btnTienIch;
+    @FXML
+    private Button btnPhanAnh;
 
     private Node dashboardView;
     private Label lblHouseholdTotal;
@@ -147,6 +149,11 @@ public class DashboardController {
         mainBorderPane.setCenter(dashboardView);
     }
 
+    @FXML
+    void handlePhanAnh(ActionEvent event) {
+        loadView("phananh.fxml");
+    }
+
     private Node createHomeDashboard() {
         BorderPane wrapper = new BorderPane();
         wrapper.setStyle("-fx-background-color: #f4f7fb;");
@@ -164,7 +171,7 @@ public class DashboardController {
         FlowPane cards = new FlowPane();
         cards.setHgap(18);
         cards.setVgap(18);
-        cards.setPrefWrapLength(720);
+        cards.setPrefWrapLength(900);
         cards.setAlignment(Pos.TOP_LEFT);
 
         lblHouseholdTotal = createMetricLabel();
@@ -178,10 +185,19 @@ public class DashboardController {
                 createDashboardCard("Nhân khẩu", lblResidentTotal, null, "●", "#27ae60", this::showResidentListView),
                 createDashboardCard("Khoản thu", lblFeeTotal, null, "$", "#f2994a", this::showFeeListView),
                 createDashboardCard("Nộp tiền", lblPaidTotal, lblUnpaidTotal, "▣", "#9b51e0",
-                        this::showPaymentStatusView),
+                        this::showPaymentStatusView));
+
+        FlowPane statsRow = new FlowPane();
+        statsRow.setHgap(18);
+        statsRow.setVgap(18);
+        statsRow.setPrefWrapLength(900);
+        statsRow.setAlignment(Pos.TOP_LEFT);
+        statsRow.getChildren().add(
                 createDashboardCard("Thống kê", null, null, "▥", "#eb5757", () -> loadView("thongke.fxml")));
 
-        wrapper.setCenter(cards);
+        VBox centerContent = new VBox(28, cards, statsRow);
+        centerContent.setAlignment(Pos.TOP_LEFT);
+        wrapper.setCenter(centerContent);
         return wrapper;
     }
 
