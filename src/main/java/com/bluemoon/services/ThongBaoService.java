@@ -52,7 +52,12 @@ public class ThongBaoService {
     }
 
     public List<ThongBao> searchNotifications(String tenThongBao, LocalDate ngayBanHanh, String trangThai) {
-        return repository.search(tenThongBao, ngayBanHanh, trangThai);
+        return repository.search(tenThongBao, ngayBanHanh, trangThai, null);
+    }
+
+    public List<ThongBao> searchNotifications(String tenThongBao, LocalDate ngayBanHanh, String trangThai,
+            Integer groupId) {
+        return repository.search(tenThongBao, ngayBanHanh, trangThai, groupId);
     }
 
     public boolean markAsRead(int userId, int thongBaoId) {

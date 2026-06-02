@@ -8,6 +8,7 @@ public class ThongBao {
     private String filePath;
     private LocalDate ngayBanHanh;
     private String trangThai;
+    private String nhomNhan;
 
     public ThongBao() {
     }
@@ -58,5 +59,13 @@ public class ThongBao {
 
     public void setTrangThai(String trangThai) {
         this.trangThai = trangThai;
+    }
+
+    public String getNhomNhan() {
+        return nhomNhan;
+    }
+
+    public void setNhomNhan(String nhomNhan) {
+        this.nhomNhan = nhomNhan;
     }
 }

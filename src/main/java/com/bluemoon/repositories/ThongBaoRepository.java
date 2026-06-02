@@ -10,60 +10,15 @@ import java.util.List;
 
 public class ThongBaoRepository {
 
-    public ThongBaoRepository() {
-        ensureTable();
-    }
-
-    private void ensureTable() {
-        String sql = "CREATE TABLE IF NOT EXISTS thong_bao (" +
-                "id INT AUTO_INCREMENT PRIMARY KEY, " +
-                "ten_thong_bao VARCHAR(255) NOT NULL, " +
-                "file_path VARCHAR(512), " +
-                "ngay_ban_hanh DATE, " +
-                "trang_thai VARCHAR(50) NOT NULL" +
-                ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
-
-        String sqlGroupMapping = "CREATE TABLE IF NOT EXISTS thong_bao_group (" +
-                "thong_bao_id INT NOT NULL, " +
-                "group_id INT NOT NULL, " +
-                "PRIMARY KEY (thong_bao_id, group_id), " +
-                "FOREIGN KEY (thong_bao_id) REFERENCES thong_bao(id) ON DELETE CASCADE, " +
-                "FOREIGN KEY (group_id) REFERENCES user_group(id) ON DELETE CASCADE" +
-                ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
-
-        String sqlReadMapping = "CREATE TABLE IF NOT EXISTS user_read_notification (" +
-                "user_id INT NOT NULL, " +
-                "thong_bao_id INT NOT NULL, " +
-                "PRIMARY KEY (user_id, thong_bao_id), " +
-                "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, " +
-                "FOREIGN KEY (thong_bao_id) REFERENCES thong_bao(id) ON DELETE CASCADE" +
-                ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
-
-        try (Connection conn = DBConnection.getConnection();
-                Statement stmt = conn.createStatement()) {
-            stmt.execute(sql);
-            stmt.execute(sqlGroupMapping);
-            stmt.execute(sqlReadMapping);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
     public List<ThongBao> findAll() {
         List<ThongBao> list = new ArrayList<>();
-        String sql = "SELECT * FROM thong_bao ORDER BY id DESC";
+        String sql = notificationSelect() + " GROUP BY tb.id ORDER BY tb.id DESC";
 
         try (Connection conn = DBConnection.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql);
                 ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
-                ThongBao thongBao = new ThongBao(
-                        rs.getInt("id"),
-                        rs.getString("ten_thong_bao"),
-                        rs.getString("file_path"),
-                        rs.getDate("ngay_ban_hanh") != null ? rs.getDate("ngay_ban_hanh").toLocalDate() : null,
-                        rs.getString("trang_thai"));
-                list.add(thongBao);
+                list.add(map(rs));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -213,7 +168,7 @@ public class ThongBaoRepository {
                 "FROM thong_bao tb " +
                 "JOIN thong_bao_group tbg ON tb.id = tbg.thong_bao_id " +
                 "JOIN user_group_mapping ugm ON tbg.group_id = ugm.group_id " +
-                "WHERE ugm.user_id = ? AND tb.trang_thai = 'Đã xuất bản' " +
+                "WHERE ugm.user_id = ? AND tb.trang_thai IN ('Đã xuất bản', 'Đã phát hành') " +
                 "ORDER BY tb.ngay_ban_hanh DESC, tb.id DESC";
         try (Connection conn = DBConnection.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -235,24 +190,28 @@ public class ThongBaoRepository {
         return list;
     }
 
-    public List<ThongBao> search(String tenThongBao, LocalDate ngayBanHanh, String trangThai) {
+    public List<ThongBao> search(String tenThongBao, LocalDate ngayBanHanh, String trangThai, Integer groupId) {
         List<ThongBao> list = new ArrayList<>();
-        StringBuilder sql = new StringBuilder("SELECT * FROM thong_bao WHERE 1=1");
+        StringBuilder sql = new StringBuilder(notificationSelect()).append(" WHERE 1=1");
         List<Object> params = new ArrayList<>();
 
         if (tenThongBao != null && !tenThongBao.trim().isEmpty()) {
-            sql.append(" AND ten_thong_bao LIKE ?");
+            sql.append(" AND tb.ten_thong_bao LIKE ?");
             params.add("%" + tenThongBao.trim() + "%");
         }
         if (ngayBanHanh != null) {
-            sql.append(" AND ngay_ban_hanh = ?");
+            sql.append(" AND tb.ngay_ban_hanh = ?");
             params.add(Date.valueOf(ngayBanHanh));
         }
         if (trangThai != null && !trangThai.trim().isEmpty()) {
-            sql.append(" AND trang_thai = ?");
+            sql.append(" AND tb.trang_thai = ?");
             params.add(trangThai.trim());
         }
-        sql.append(" ORDER BY id DESC");
+        if (groupId != null) {
+            sql.append(" AND EXISTS (SELECT 1 FROM thong_bao_group filter_group WHERE filter_group.thong_bao_id = tb.id AND filter_group.group_id = ?)");
+            params.add(groupId);
+        }
+        sql.append(" GROUP BY tb.id ORDER BY tb.id DESC");
 
         try (Connection conn = DBConnection.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
@@ -261,13 +220,7 @@ public class ThongBaoRepository {
             }
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    ThongBao thongBao = new ThongBao(
-                            rs.getInt("id"),
-                            rs.getString("ten_thong_bao"),
-                            rs.getString("file_path"),
-                            rs.getDate("ngay_ban_hanh") != null ? rs.getDate("ngay_ban_hanh").toLocalDate() : null,
-                            rs.getString("trang_thai"));
-                    list.add(thongBao);
+                    list.add(map(rs));
                 }
             }
         } catch (SQLException e) {
@@ -304,5 +257,19 @@ public class ThongBaoRepository {
             e.printStackTrace();
         }
         return list;
+    }
+
+    private String notificationSelect() {
+        return "SELECT tb.*, COALESCE(GROUP_CONCAT(DISTINCT ug.ten_nhom ORDER BY ug.ten_nhom SEPARATOR ', '), 'Chưa chọn') AS nhom_nhan "
+                + "FROM thong_bao tb LEFT JOIN thong_bao_group tbg ON tb.id = tbg.thong_bao_id "
+                + "LEFT JOIN user_group ug ON ug.id = tbg.group_id";
+    }
+
+    private ThongBao map(ResultSet rs) throws SQLException {
+        ThongBao item = new ThongBao(rs.getInt("id"), rs.getString("ten_thong_bao"), rs.getString("file_path"),
+                rs.getDate("ngay_ban_hanh") == null ? null : rs.getDate("ngay_ban_hanh").toLocalDate(),
+                rs.getString("trang_thai"));
+        item.setNhomNhan(rs.getString("nhom_nhan"));
+        return item;
     }
 }
