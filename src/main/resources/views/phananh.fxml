@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="18.0" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bluemoon.controllers.PhanAnhController">
+    <padding>
+        <Insets top="15.0" right="15.0" bottom="15.0" left="15.0" />
+    </padding>
+
+    <Label text="PHẢN ÁNH" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #0f172a;" />
+
+    <TabPane tabClosingPolicy="UNAVAILABLE" style="-fx-background-color: transparent;">
+        <tabs>
+            <Tab text="Phản ánh của cư dân">
+                <VBox spacing="12.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 2);">
+                    <padding>
+                        <Insets top="15.0" right="20.0" bottom="15.0" left="20.0" />
+                    </padding>
+                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Button fx:id="btnAddReport" mnemonicParsing="false" onAction="#handleAddReport" text="Thêm phản ánh" style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 8 16;" />
+                        <TextField fx:id="txtSearchCitizen" promptText="Tìm kiếm theo tiêu đề, nội dung" maxWidth="360" style="-fx-background-color: #f8fafc; -fx-border-color: #cbd5e1; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 8 12;" />
+                        <ComboBox fx:id="cbFilterStatus" promptText="Trạng thái" prefWidth="160" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 8; -fx-background-radius: 8;" />
+                        <Button fx:id="btnSearchCitizen" mnemonicParsing="false" onAction="#handleSearchCitizen" text="Tìm kiếm" style="-fx-background-color: #22c55e; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 8 16;" />
+                        <Button fx:id="btnResetSearch" mnemonicParsing="false" onAction="#handleResetSearch" text="Làm mới" style="-fx-background-color: #64748b; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 8 16;" />
+                    </HBox>
+                    <TableView fx:id="tableCitizenReports" VBox.vgrow="ALWAYS" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8;">
+                        <columns>
+                            <TableColumn fx:id="colCitizenStt" prefWidth="60.0" style="-fx-alignment: CENTER;" text="STT" />
+                            <TableColumn fx:id="colCitizenTitle" prefWidth="260.0" text="Tiêu đề" />
+                            <TableColumn fx:id="colCitizenCategory" prefWidth="160.0" text="Lĩnh vực" />
+                            <TableColumn fx:id="colCitizenDate" prefWidth="140.0" style="-fx-alignment: CENTER;" text="Ngày gửi" />
+                            <TableColumn fx:id="colCitizenStatus" prefWidth="130.0" style="-fx-alignment: CENTER;" text="Trạng thái" />
+                            <TableColumn fx:id="colCitizenActions" prefWidth="150.0" style="-fx-alignment: CENTER;" text="Thao tác" />
+                        </columns>
+                    </TableView>
+                </VBox>
+            </Tab>
+            <Tab text="Tiếp nhận phản ánh">
+                <VBox spacing="12.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 2);">
+                    <padding>
+                        <Insets top="15.0" right="20.0" bottom="15.0" left="20.0" />
+                    </padding>
+                    <Label text="Danh sách phản ánh cần tiếp nhận" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1e293b;" />
+                    <TableView fx:id="tableAdminReports" VBox.vgrow="ALWAYS" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8;">
+                        <columns>
+                            <TableColumn fx:id="colAdminStt" prefWidth="60.0" style="-fx-alignment: CENTER;" text="STT" />
+                            <TableColumn fx:id="colAdminTitle" prefWidth="240.0" text="Tiêu đề" />
+                            <TableColumn fx:id="colAdminSender" prefWidth="160.0" text="Người gửi" />
+                            <TableColumn fx:id="colAdminDate" prefWidth="140.0" style="-fx-alignment: CENTER;" text="Ngày gửi" />
+                            <TableColumn fx:id="colAdminStatus" prefWidth="120.0" style="-fx-alignment: CENTER;" text="Trạng thái" />
+                            <TableColumn fx:id="colAdminAssignee" prefWidth="180.0" text="Người phụ trách" />
+                            <TableColumn fx:id="colAdminActions" prefWidth="120.0" style="-fx-alignment: CENTER;" text="Thao tác" />
+                        </columns>
+                    </TableView>
+                </VBox>
+            </Tab>
+        </tabs>
+    </TabPane>
+</VBox>

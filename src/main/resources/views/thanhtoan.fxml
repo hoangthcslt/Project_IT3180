@@ -1,36 +1,92 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<!-- Redesigned by Antigravity for Version 2 -->
+<?import java.lang.String?>
+<?import javafx.collections.FXCollections?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 
-<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bluemoon.controllers.PaymentController" spacing="10" alignment="CENTER" style="-fx-padding: 20;">
-    <Label text="Thanh Toán Phí" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
-    
-    <GridPane spacing="10" alignment="CENTER">
-        <Label text="Mã hộ khẩu:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-        <HBox GridPane.columnIndex="1" GridPane.rowIndex="0" spacing="10">
-            <TextField fx:id="txtMaHoKhau" promptText="Nhập mã hộ khẩu..."/>
-            <Button text="Tìm" onAction="#handleTimHoKhau"/>
-        </HBox>
-        
-        <Label text="Tên chủ hộ:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-        <Label fx:id="lblTenChuHo" text="---" style="-fx-font-weight: bold;" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-        
-        <Label text="Chọn khoản thu:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-        <ComboBox fx:id="cbKhoanThu" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-        
-        <Label text="Nợ hiện tại (VND):" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-        <Label fx:id="lblNoHienTai" text="0" style="-fx-text-fill: red; -fx-font-weight: bold;" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-        
-        <Label text="Số tiền nộp:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
-        <TextField fx:id="txtSoTienNop" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
-        
-        <Label text="Hình thức nộp:" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
-        <ComboBox fx:id="cbHinhThuc" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
-        
-        <Label text="Người nộp:" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
-        <TextField fx:id="txtNguoiNop" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
-    </GridPane>
-    
-    <Button text="Thực hiện thanh toán" fx:id="btnThanhToan" onAction="#handleThanhToan"/>
+<VBox prefHeight="650.0" prefWidth="950.0" spacing="15.0" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bluemoon.controllers.PaymentController">
+   <padding>
+      <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+   </padding>
+
+   <Label text="HÓA ĐƠN &amp; THANH TOÁN" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-padding: 0 0 5 0;" />
+
+   <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;">
+      <tabs>
+         <!-- TAB 1: DANH SÁCH HÓA ĐƠN -->
+         <Tab text="Danh sách hóa đơn">
+            <VBox spacing="15.0">
+               <padding>
+                  <Insets top="15.0" />
+               </padding>
+               <HBox spacing="10.0" alignment="CENTER_LEFT" style="-fx-background-color: white; -fx-padding: 10 15; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8;">
+                  <TextField fx:id="txtSearchInvoice" promptText="Tìm theo mã hóa đơn, chủ hộ, phòng..." style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-padding: 7 10; -fx-pref-width: 280px;" />
+                  <ComboBox fx:id="cbFilterStatus" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-padding: 4 6;">
+                     <items>
+                        <FXCollections fx:factory="observableArrayList">
+                           <String fx:value="TẤT CẢ" />
+                           <String fx:value="CHUA_NOP" />
+                           <String fx:value="DA_NOP" />
+                        </FXCollections>
+                     </items>
+                  </ComboBox>
+                  <Button fx:id="btnSearchInvoice" mnemonicParsing="false" onAction="#handleSearchInvoice" text="Tìm kiếm" style="-fx-background-color: #0ea5e9; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 6; -fx-cursor: hand;" />
+                  <Button fx:id="btnResetInvoice" mnemonicParsing="false" onAction="#handleResetInvoice" text="Đặt lại" style="-fx-background-color: #64748b; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 6; -fx-cursor: hand;" />
+               </HBox>
+               
+               <TableView fx:id="tableInvoices" VBox.vgrow="ALWAYS" style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #cbd5e1; -fx-border-radius: 8;">
+                  <columns>
+                     <TableColumn fx:id="colInvId" prefWidth="50.0" style="-fx-alignment: CENTER;" text="ID" />
+                     <TableColumn fx:id="colInvCode" prefWidth="120.0" text="Mã Hóa Đơn" />
+                     <TableColumn fx:id="colInvHk" prefWidth="100.0" text="Hộ Khẩu" />
+                     <TableColumn fx:id="colInvOwner" prefWidth="160.0" text="Chủ Hộ" />
+                     <TableColumn fx:id="colInvPeriod" prefWidth="180.0" text="Đợt Thu Phí" />
+                     <TableColumn fx:id="colInvTotal" prefWidth="110.0" text="Tổng Tiền" />
+                     <TableColumn fx:id="colInvPaid" prefWidth="110.0" text="Đã Nộp" />
+                     <TableColumn fx:id="colInvStatus" prefWidth="100.0" style="-fx-alignment: CENTER;" text="Trạng Thái" />
+                     <TableColumn fx:id="colInvActions" prefWidth="150.0" style="-fx-alignment: CENTER;" text="Hành Động" />
+                  </columns>
+               </TableView>
+            </VBox>
+         </Tab>
+
+         <!-- TAB 2: LỊCH SỬ GIAO DỊCH -->
+         <Tab text="Lịch sử giao dịch">
+            <VBox spacing="15.0">
+               <padding>
+                  <Insets top="15.0" />
+               </padding>
+               <HBox spacing="10.0" alignment="CENTER_LEFT" style="-fx-background-color: white; -fx-padding: 10 15; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8;">
+                  <TextField fx:id="txtSearchTx" promptText="Tìm theo người nộp, chủ hộ, phòng..." style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-padding: 7 10; -fx-pref-width: 280px;" />
+                  <Button fx:id="btnSearchTx" mnemonicParsing="false" onAction="#handleSearchTx" text="Tìm kiếm" style="-fx-background-color: #0ea5e9; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 6; -fx-cursor: hand;" />
+                  <Button fx:id="btnResetTx" mnemonicParsing="false" onAction="#handleResetTx" text="Đặt lại" style="-fx-background-color: #64748b; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 6; -fx-cursor: hand;" />
+               </HBox>
+
+               <TableView fx:id="tableTransactions" VBox.vgrow="ALWAYS" style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #cbd5e1; -fx-border-radius: 8;">
+                  <columns>
+                     <TableColumn fx:id="colTxId" prefWidth="50.0" style="-fx-alignment: CENTER;" text="ID" />
+                     <TableColumn fx:id="colTxInvCode" prefWidth="120.0" text="Mã Hóa Đơn" />
+                     <TableColumn fx:id="colTxHk" prefWidth="100.0" text="Hộ Khẩu" />
+                     <TableColumn fx:id="colTxOwner" prefWidth="150.0" text="Chủ Hộ" />
+                     <TableColumn fx:id="colTxPayer" prefWidth="150.0" text="Người Nộp" />
+                     <TableColumn fx:id="colTxAmount" prefWidth="120.0" text="Số Tiền Nộp" />
+                     <TableColumn fx:id="colTxDate" prefWidth="120.0" style="-fx-alignment: CENTER;" text="Ngày Nộp" />
+                     <TableColumn fx:id="colTxMethod" prefWidth="110.0" style="-fx-alignment: CENTER;" text="Hình Thức" />
+                  </columns>
+               </TableView>
+            </VBox>
+         </Tab>
+      </tabs>
+   </TabPane>
 </VBox>

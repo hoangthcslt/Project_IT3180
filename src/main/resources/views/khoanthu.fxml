@@ -1,73 +1,85 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!-- Redesigned by Antigravity for Version 2 -->
 <?import java.lang.String?>
 <?import javafx.collections.FXCollections?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefHeight="600.0" prefWidth="800.0" spacing="10.0" style="-fx-background-color: #ffffff; -fx-padding: 20px;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bluemoon.controllers.FeeController">
-    <Label text="QUẢN LÝ ĐỢT THU PHÍ" textFill="#2c3e50">
-        <font>
-            <Font name="System Bold" size="20.0" />
-        </font>
-    </Label>
-    
-    <VBox style="-fx-border-color: #bdc3c7; -fx-border-radius: 5px; -fx-padding: 15px;" spacing="10">
-        <Label text="Tạo Đợt Thu Mới">
-            <font>
-                <Font name="System Bold" size="14.0" />
-            </font>
-        </Label>
-        <GridPane hgap="15.0" vgap="10.0">
-            <Label text="Mã khoản thu:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-            <TextField fx:id="txtMaKhoanThu" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-            
-            <Label text="Tên khoản thu:" GridPane.columnIndex="2" GridPane.rowIndex="0" />
-            <TextField fx:id="txtTenKhoanThu" GridPane.columnIndex="3" GridPane.rowIndex="0" />
-            
-            <Label text="Loại phí:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-            <ComboBox fx:id="cbLoaiPhi" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                <items>
-                    <FXCollections fx:factory="observableArrayList">
-                        <String fx:value="BAT_BUOC" />
-                        <String fx:value="TU_NGUYEN" />
-                    </FXCollections>
-                </items>
-            </ComboBox>
-            
-            <Label text="Đơn giá:" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-            <TextField fx:id="txtDonGia" GridPane.columnIndex="3" GridPane.rowIndex="1" />
-            
-            <Label text="Ngày tạo:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-            <DatePicker fx:id="dpNgayTao" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-            
-            <Label text="Ghi chú:" GridPane.columnIndex="2" GridPane.rowIndex="2" />
-            <TextField fx:id="txtGhiChu" GridPane.columnIndex="3" GridPane.rowIndex="2" />
-        </GridPane>
-        <HBox alignment="CENTER_RIGHT" spacing="10">
-            <Button mnemonicParsing="false" onAction="#handleAdd" style="-fx-background-color: #27ae60; -fx-text-fill: white;" text="Tạo mới" />
-            <Button mnemonicParsing="false" onAction="#handleClear" style="-fx-background-color: #7f8c8d; -fx-text-fill: white;" text="Làm lại" />
-        </HBox>
-    </VBox>
+<VBox prefHeight="650.0" prefWidth="950.0" spacing="15.0" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bluemoon.controllers.FeeController">
+   <padding>
+      <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+   </padding>
 
-    <TableView fx:id="tableKhoanThu" VBox.vgrow="ALWAYS">
-        <columns>
-            <TableColumn fx:id="colId" prefWidth="50.0" text="ID" />
-            <TableColumn fx:id="colMaKhoanThu" prefWidth="100.0" text="Mã Thu" />
-            <TableColumn fx:id="colTenKhoanThu" prefWidth="200.0" text="Tên Khoản Thu" />
-            <TableColumn fx:id="colLoaiPhi" prefWidth="100.0" text="Loại Phí" />
-            <TableColumn fx:id="colDonGia" prefWidth="100.0" text="Đơn Giá" />
-            <TableColumn fx:id="colNgayTao" prefWidth="100.0" text="Ngày Tạo" />
-            <TableColumn fx:id="colGhiChu" prefWidth="150.0" text="Ghi Chú" />
-        </columns>
-    </TableView>
+   <Label text="QUẢN LÝ ĐỢT THU PHÍ &amp; HÓA ĐƠN" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-padding: 0 0 5 0;" />
+
+   <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;">
+      <tabs>
+         <!-- TAB 1: ĐỢT THU PHÍ -->
+         <Tab text="Đợt thu phí &amp; Phát hành hóa đơn">
+            <VBox spacing="15.0">
+               <padding>
+                  <Insets top="15.0" />
+               </padding>
+               <HBox spacing="10.0" alignment="CENTER_LEFT" style="-fx-background-color: white; -fx-padding: 10 15; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8;">
+                  <Button fx:id="btnNewBillingRun" mnemonicParsing="false" onAction="#handleShowNewBillingRun" text="+ Tạo đợt thu mới" style="-fx-background-color: #6366f1; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 6; -fx-cursor: hand;" />
+                  <TextField fx:id="txtSearchRun" promptText="Tìm theo tên/mã đợt..." style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-padding: 7 10; -fx-pref-width: 250px;" />
+                  <Button fx:id="btnSearchRun" mnemonicParsing="false" onAction="#handleSearchRun" text="Tìm kiếm" style="-fx-background-color: #0ea5e9; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 6; -fx-cursor: hand;" />
+                  <Button fx:id="btnResetRun" mnemonicParsing="false" onAction="#handleResetRun" text="Đặt lại" style="-fx-background-color: #64748b; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 6; -fx-cursor: hand;" />
+               </HBox>
+
+               <TableView fx:id="tableBillingRuns" VBox.vgrow="ALWAYS" style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #cbd5e1; -fx-border-radius: 8;">
+                  <columns>
+                     <TableColumn fx:id="colRunId" prefWidth="50.0" style="-fx-alignment: CENTER;" text="ID" />
+                     <TableColumn fx:id="colRunCode" prefWidth="120.0" text="Mã Đợt Thu" />
+                     <TableColumn fx:id="colRunName" prefWidth="220.0" text="Tên Đợt Thu Phí" />
+                     <TableColumn fx:id="colRunCreatedDate" prefWidth="120.0" style="-fx-alignment: CENTER;" text="Ngày Tạo" />
+                     <TableColumn fx:id="colRunDueDate" prefWidth="120.0" style="-fx-alignment: CENTER;" text="Hạn Nộp" />
+                     <TableColumn fx:id="colRunStatus" prefWidth="110.0" style="-fx-alignment: CENTER;" text="Trạng Thái" />
+                     <TableColumn fx:id="colRunActions" prefWidth="250.0" style="-fx-alignment: CENTER;" text="Hành Động" />
+                  </columns>
+               </TableView>
+            </VBox>
+         </Tab>
+
+         <!-- TAB 2: DANH MỤC PHÍ CỐ ĐỊNH -->
+         <Tab text="Cấu hình phí cố định">
+            <VBox spacing="15.0">
+               <padding>
+                  <Insets top="15.0" />
+               </padding>
+               <HBox spacing="10.0" alignment="CENTER_LEFT" style="-fx-background-color: white; -fx-padding: 10 15; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8;">
+                  <Button fx:id="btnAddFixedFee" mnemonicParsing="false" onAction="#handleShowAddFixedFee" text="+ Thêm phí mới" style="-fx-background-color: #22c55e; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 6; -fx-cursor: hand;" />
+                  <TextField fx:id="txtSearchFixedFee" promptText="Tìm theo tên/mã phí..." style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-padding: 7 10; -fx-pref-width: 250px;" />
+                  <Button fx:id="btnSearchFixedFee" mnemonicParsing="false" onAction="#handleSearchFixedFee" text="Tìm kiếm" style="-fx-background-color: #0ea5e9; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 6; -fx-cursor: hand;" />
+                  <Button fx:id="btnResetFixedFee" mnemonicParsing="false" onAction="#handleResetFixedFee" text="Đặt lại" style="-fx-background-color: #64748b; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 6; -fx-cursor: hand;" />
+               </HBox>
+               
+               <TableView fx:id="tableFixedFees" VBox.vgrow="ALWAYS" style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #cbd5e1; -fx-border-radius: 8;">
+                  <columns>
+                     <TableColumn fx:id="colFixedId" prefWidth="50.0" style="-fx-alignment: CENTER;" text="ID" />
+                     <TableColumn fx:id="colFixedCode" prefWidth="120.0" text="Mã Phí" />
+                     <TableColumn fx:id="colFixedName" prefWidth="180.0" text="Tên Phí" />
+                     <TableColumn fx:id="colFixedType" prefWidth="120.0" text="Loại Phí" />
+                     <TableColumn fx:id="colFixedCalcType" prefWidth="150.0" text="Loại Tính Giá" />
+                     <TableColumn fx:id="colFixedPrice" prefWidth="120.0" text="Đơn Giá" />
+                     <TableColumn fx:id="colFixedNote" prefWidth="150.0" text="Ghi Chú" />
+                     <TableColumn fx:id="colFixedActions" prefWidth="120.0" style="-fx-alignment: CENTER;" text="Hành Động" />
+                  </columns>
+               </TableView>
+            </VBox>
+         </Tab>
+      </tabs>
+   </TabPane>
 </VBox>
