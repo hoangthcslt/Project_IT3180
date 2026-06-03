@@ -178,6 +178,88 @@ public class ThongKeRepository {
         return result;
     }
 
+    public List<Map<String, Object>> layThongKeTyLeCanHo() throws SQLException {
+        List<Map<String, Object>> result = new ArrayList<>();
+        String sql = "SELECT status, COUNT(*) as count FROM ho_khau GROUP BY status";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("status", rs.getString("status"));
+                row.put("count", rs.getInt("count"));
+                result.add(row);
+            }
+        }
+        return result;
+    }
+
+    public List<Map<String, Object>> layDanCuTheoThoiGian() throws SQLException {
+        List<Map<String, Object>> result = new ArrayList<>();
+        String sql = "SELECT hk.ngay_lap, COUNT(nk.id) as count " +
+                     "FROM nhan_khau nk " +
+                     "JOIN ho_khau hk ON nk.ho_khau_id = hk.id " +
+                     "GROUP BY hk.ngay_lap " +
+                     "ORDER BY hk.ngay_lap ASC";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("ngayLap", rs.getDate("ngay_lap").toLocalDate());
+                row.put("count", rs.getInt("count"));
+                result.add(row);
+            }
+        }
+        return result;
+    }
+
+    public List<Map<String, Object>> layDoanhThuTheoThang() throws SQLException {
+        List<Map<String, Object>> result = new ArrayList<>();
+        String sql = "SELECT DATE_FORMAT(ngay_nop, '%Y-%m') as label, SUM(so_tien_nop) as val " +
+                     "FROM nop_tien " +
+                     "GROUP BY label " +
+                     "ORDER BY label ASC";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("label", rs.getString("label"));
+                row.put("val", rs.getBigDecimal("val"));
+                result.add(row);
+            }
+        }
+        return result;
+    }
+
+    public List<Map<String, Object>> layNoTheoThang() throws SQLException {
+        List<Map<String, Object>> result = new ArrayList<>();
+        String sql = "SELECT " +
+                     "  DATE_FORMAT(kt.ngay_tao, '%Y-%m') AS label, " +
+                     "  SUM(GREATEST(hk.dien_tich * kt.don_gia - COALESCE(paid_sub.tong_nop, 0), 0)) AS val " +
+                     "FROM khoan_thu kt " +
+                     "CROSS JOIN ho_khau hk " +
+                     "LEFT JOIN (" +
+                     "  SELECT ho_khau_id, khoan_thu_id, SUM(so_tien_nop) AS tong_nop " +
+                     "  FROM nop_tien " +
+                     "  GROUP BY ho_khau_id, khoan_thu_id" +
+                     ") paid_sub ON paid_sub.ho_khau_id = hk.id AND paid_sub.khoan_thu_id = kt.id " +
+                     "GROUP BY label " +
+                     "ORDER BY label ASC";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("label", rs.getString("label"));
+                row.put("val", rs.getBigDecimal("val"));
+                result.add(row);
+            }
+        }
+        return result;
+    }
+
     public List<Integer> layDanhSachNamCoGiaoDich() throws SQLException {
         List<Integer> years = new ArrayList<>();
         String sql = "SELECT DISTINCT YEAR(ngay_nop) as nam FROM nop_tien ORDER BY nam DESC";
