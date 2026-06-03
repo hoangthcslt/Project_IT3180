@@ -1,284 +1,247 @@
 package com.bluemoon.controllers;
 
+import com.bluemoon.models.DanhMucPhi;
 import com.bluemoon.models.KhoanThu;
+import com.bluemoon.models.HoaDon;
+import com.bluemoon.models.ChiTietHoaDon;
+import com.bluemoon.services.DanhMucPhiService;
 import com.bluemoon.services.FeeService;
+import com.bluemoon.services.HoaDonService;
+import com.bluemoon.repositories.FeeRepository;
+import com.bluemoon.repositories.HoaDonRepository;
+
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.ButtonBar.ButtonData;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.GridPane;
-import javafx.geometry.Insets;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import javafx.geometry.Pos;
 
 public class FeeController {
 
-    @FXML
-    private TextField txtMaKhoanThu;
-    @FXML
-    private TextField txtTenKhoanThu;
-    @FXML
-    private ComboBox<String> cbLoaiPhi;
-    @FXML
-    private TextField txtDonGia;
-    @FXML
-    private DatePicker dpNgayTao;
-    @FXML
-    private TextField txtGhiChu;
+    // Tab 1: Fixed Fees
+    @FXML private TableView<DanhMucPhi> tableFixedFees;
+    @FXML private TableColumn<DanhMucPhi, Integer> colFixedId;
+    @FXML private TableColumn<DanhMucPhi, String> colFixedCode;
+    @FXML private TableColumn<DanhMucPhi, String> colFixedName;
+    @FXML private TableColumn<DanhMucPhi, String> colFixedType;
+    @FXML private TableColumn<DanhMucPhi, String> colFixedCalcType;
+    @FXML private TableColumn<DanhMucPhi, BigDecimal> colFixedPrice;
+    @FXML private TableColumn<DanhMucPhi, String> colFixedNote;
+    @FXML private TableColumn<DanhMucPhi, Void> colFixedActions;
+    @FXML private TextField txtSearchFixedFee;
 
-    @FXML
-    private TableView<KhoanThu> tableKhoanThu;
-    @FXML
-    private TableColumn<KhoanThu, Integer> colId;
-    @FXML
-    private TableColumn<KhoanThu, String> colMaKhoanThu;
-    @FXML
-    private TableColumn<KhoanThu, String> colTenKhoanThu;
-    @FXML
-    private TableColumn<KhoanThu, String> colLoaiPhi;
-    @FXML
-    private TableColumn<KhoanThu, BigDecimal> colDonGia;
-    @FXML
-    private TableColumn<KhoanThu, LocalDate> colNgayTao;
-    @FXML
-    private TableColumn<KhoanThu, String> colGhiChu;
-    @FXML
-    private TableColumn<KhoanThu, Void> colActions;
+    // Tab 2: Billing Runs
+    @FXML private TableView<KhoanThu> tableBillingRuns;
+    @FXML private TableColumn<KhoanThu, Integer> colRunId;
+    @FXML private TableColumn<KhoanThu, String> colRunCode;
+    @FXML private TableColumn<KhoanThu, String> colRunName;
+    @FXML private TableColumn<KhoanThu, LocalDate> colRunCreatedDate;
+    @FXML private TableColumn<KhoanThu, LocalDate> colRunDueDate;
+    @FXML private TableColumn<KhoanThu, String> colRunStatus;
+    @FXML private TableColumn<KhoanThu, Void> colRunActions;
+    @FXML private TextField txtSearchRun;
 
-    @FXML
-    private TextField txtSearchMa;
-    @FXML
-    private TextField txtSearchTen;
-    @FXML
-    private ComboBox<String> cbSearchLoai;
-    @FXML
-    private TextField txtSearchDonGia;
-    @FXML
-    private DatePicker dpSearchNgayTao;
-    @FXML
-    private Button btnSearchFee;
-    @FXML
-    private Button btnResetSearch;
+    private DanhMucPhiService fixedFeeService;
+    private FeeService billingRunService;
+    private HoaDonService invoiceService;
+    private FeeRepository feeRepository;
 
-    private FeeService feeService;
-    private ObservableList<KhoanThu> feeList;
+    private ObservableList<DanhMucPhi> fixedFeeList;
+    private ObservableList<KhoanThu> billingRunList;
 
     @FXML
     public void initialize() {
-        feeService = new FeeService();
-        feeList = FXCollections.observableArrayList();
+        fixedFeeService = new DanhMucPhiService();
+        billingRunService = new FeeService();
+        invoiceService = new HoaDonService();
+        feeRepository = new FeeRepository();
 
-        // Setup columns
-        colId.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getId()));
-        colMaKhoanThu.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getMaKhoanThu()));
-        colTenKhoanThu.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getTenKhoanThu()));
-        colLoaiPhi.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getLoaiPhi()));
-        colDonGia.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getDonGia()));
-        colNgayTao.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getNgayTao()));
-        colGhiChu.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getGhiChu()));
+        fixedFeeList = FXCollections.observableArrayList();
+        billingRunList = FXCollections.observableArrayList();
 
-        cbLoaiPhi.getSelectionModel().selectFirst();
-        cbSearchLoai.getSelectionModel().selectFirst();
+        // 1. Setup Tab 1: Fixed Fees Columns
+        colFixedId.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getId()));
+        colFixedCode.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getMaPhi()));
+        colFixedName.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getTenPhi()));
+        colFixedType.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getLoaiPhi()));
+        colFixedCalcType.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getLoaiTinhGia()));
+        colFixedPrice.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getDonGia()));
+        colFixedNote.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getGhiChu()));
+        colFixedActions.setCellFactory(col -> actionCellFixedFees());
 
-        loadData();
+        // 2. Setup Tab 2: Billing Runs Columns
+        colRunId.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getId()));
+        colRunCode.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getMaKhoanThu()));
+        colRunName.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getTenKhoanThu()));
+        colRunCreatedDate.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getNgayTao()));
+        colRunDueDate.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getHanNop()));
+        colRunStatus.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getTrangThai()));
+        colRunActions.setCellFactory(col -> actionCellBillingRuns());
 
-        // Validation for Đơn giá: only allow numbers and decimal points
-        txtDonGia.setTextFormatter(new TextFormatter<>(change -> {
-            if (change.getControlNewText().matches("\\d*\\.?\\d*")) {
-                return change;
-            }
+        tableFixedFees.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tableBillingRuns.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        // Load data
+        loadFixedFees();
+        loadBillingRuns();
+    }
+
+    private void loadFixedFees() {
+        fixedFeeList.setAll(fixedFeeService.getAllDanhMucPhi());
+        tableFixedFees.setItems(fixedFeeList);
+    }
+
+    private void loadBillingRuns() {
+        billingRunList.setAll(billingRunService.getAllFees());
+        tableBillingRuns.setItems(billingRunList);
+    }
+
+    // --- TAB 1 ACTIONS ---
+
+    @FXML
+    void handleShowAddFixedFee(ActionEvent event) {
+        showFixedFeeDialog(null);
+    }
+
+    @FXML
+    void handleSearchFixedFee(ActionEvent event) {
+        String kw = txtSearchFixedFee.getText();
+        if (kw == null || kw.trim().isEmpty()) {
+            loadFixedFees();
+            return;
+        }
+        fixedFeeList.setAll(fixedFeeService.searchDanhMucPhi(kw, kw, null, null));
+    }
+
+    @FXML
+    void handleResetFixedFee(ActionEvent event) {
+        txtSearchFixedFee.clear();
+        loadFixedFees();
+    }
+
+    private void showFixedFeeDialog(DanhMucPhi item) {
+        boolean adding = (item == null);
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle(adding ? "Thêm phí cố định mới" : "Chỉnh sửa phí cố định");
+        dialog.setHeaderText(null);
+
+        ButtonType okButtonType = new ButtonType("OK", ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(okButtonType, ButtonType.CANCEL);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+
+        TextField txtCode = new TextField(adding ? "" : item.getMaPhi());
+        if (!adding) txtCode.setDisable(true); // Can't change code after creation
+        TextField txtName = new TextField(adding ? "" : item.getTenPhi());
+        
+        ComboBox<String> cbType = new ComboBox<>(FXCollections.observableArrayList("BAT_BUOC", "TU_NGUYEN"));
+        cbType.setValue(adding ? "BAT_BUOC" : item.getLoaiPhi());
+
+        ComboBox<String> cbCalc = new ComboBox<>(FXCollections.observableArrayList("CO_DINH", "THEO_DIEN_TICH", "THEO_SO_NGUOI", "NHAP_TAY"));
+        cbCalc.setValue(adding ? "CO_DINH" : item.getLoaiTinhGia());
+
+        TextField txtPrice = new TextField(adding ? "0" : item.getDonGia().toString());
+        TextField txtNote = new TextField(adding ? "" : item.getGhiChu());
+
+        grid.add(new Label("Mã phí:"), 0, 0);
+        grid.add(txtCode, 1, 0);
+        grid.add(new Label("Tên phí:"), 0, 1);
+        grid.add(txtName, 1, 1);
+        grid.add(new Label("Loại phí:"), 0, 2);
+        grid.add(cbType, 1, 2);
+        grid.add(new Label("Loại tính giá:"), 0, 3);
+        grid.add(cbCalc, 1, 3);
+        grid.add(new Label("Đơn giá (VND):"), 0, 4);
+        grid.add(txtPrice, 1, 4);
+        grid.add(new Label("Ghi chú:"), 0, 5);
+        grid.add(txtNote, 1, 5);
+
+        dialog.getDialogPane().setContent(grid);
+
+        // Validation helper
+        txtPrice.setTextFormatter(new TextFormatter<>(change -> {
+            if (change.getControlNewText().matches("\\d*\\.?\\d*")) return change;
             return null;
         }));
 
-        // Actions column
-        colActions.setCellFactory(col -> actionCell());
-    }
-
-    private void loadData() {
-        List<KhoanThu> list = feeService.getAllFees();
-        feeList.setAll(list);
-        tableKhoanThu.setItems(feeList);
-    }
-
-    @FXML
-    void handleAdd(ActionEvent event) {
-        try {
-            String ma = txtMaKhoanThu.getText();
-            String ten = txtTenKhoanThu.getText();
-            String loai = cbLoaiPhi.getValue();
-            String donGiaStr = txtDonGia.getText();
-            LocalDate ngayTao = dpNgayTao.getValue();
-            String ghiChu = txtGhiChu.getText();
-
-            if (ma == null || ma.isEmpty() || ten == null || ten.isEmpty() || donGiaStr == null || donGiaStr.isEmpty()
-                    || ngayTao == null) {
-                showAlert(Alert.AlertType.ERROR, "Lỗi", "Vui lòng nhập đầy đủ thông tin.");
+        final Button btnOk = (Button) dialog.getDialogPane().lookupButton(okButtonType);
+        btnOk.addEventFilter(ActionEvent.ACTION, ae -> {
+            if (txtCode.getText().trim().isEmpty() || txtName.getText().trim().isEmpty() || txtPrice.getText().trim().isEmpty()) {
+                showAlert(Alert.AlertType.ERROR, "Lỗi", "Vui lòng nhập đầy đủ thông tin bắt buộc!");
+                ae.consume();
                 return;
             }
-
-            if (feeService.isMaKhoanThuExists(ma)) {
-                showAlert(Alert.AlertType.WARNING, "Cảnh báo", "Mã khoản thu này đã tồn tại trong hệ thống!");
-                return;
+            if (adding && fixedFeeService.isMaPhiExists(txtCode.getText().trim())) {
+                showAlert(Alert.AlertType.ERROR, "Lỗi", "Mã phí đã tồn tại trong hệ thống!");
+                ae.consume();
             }
+        });
 
-            BigDecimal donGia = new BigDecimal(donGiaStr);
-
-            KhoanThu kt = new KhoanThu(0, ma, ten, loai, donGia, ngayTao, ghiChu);
-            boolean success = feeService.createFee(kt);
-
-            if (success) {
-                showAlert(Alert.AlertType.INFORMATION, "Thành công", "Tạo đợt thu phí mới thành công.");
-                loadData();
-                handleClear(null);
-            } else {
-                showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể tạo đợt thu.");
-            }
-
-        } catch (NumberFormatException e) {
-            showAlert(Alert.AlertType.ERROR, "Lỗi", "Đơn giá phải là số hợp lệ.");
-        } catch (Exception e) {
-            e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Lỗi", "Đã xảy ra lỗi hệ thống.");
-        }
-    }
-
-    @FXML
-    void handleClear(ActionEvent event) {
-        txtMaKhoanThu.clear();
-        txtTenKhoanThu.clear();
-        cbLoaiPhi.getSelectionModel().selectFirst();
-        txtDonGia.clear();
-        dpNgayTao.setValue(null);
-        txtGhiChu.clear();
-    }
-
-    @FXML
-    void handleSearch(ActionEvent event) {
-        String ma = txtSearchMa.getText();
-        String ten = txtSearchTen.getText();
-        String loai = cbSearchLoai.getValue();
-        String donGia = txtSearchDonGia.getText();
-        LocalDate ngay = dpSearchNgayTao.getValue();
-        List<KhoanThu> result = feeService.searchFees(ma, ten, loai == null || loai.isEmpty() ? null : loai, donGia,
-                ngay);
-        feeList.setAll(result);
-        tableKhoanThu.setItems(feeList);
-    }
-
-    @FXML
-    void handleResetSearch(ActionEvent event) {
-        txtSearchMa.clear();
-        txtSearchTen.clear();
-        cbSearchLoai.getSelectionModel().selectFirst();
-        txtSearchDonGia.clear();
-        dpSearchNgayTao.setValue(null);
-        loadData();
-    }
-
-    private void showEditDialog(KhoanThu item) {
-        Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("Sửa khoản thu");
-        dialog.setHeaderText(null);
-
-        ButtonType ok = new ButtonType("OK", ButtonData.OK_DONE);
-        ButtonType cancel = new ButtonType("Cancel", ButtonData.CANCEL_CLOSE);
-        dialog.getDialogPane().getButtonTypes().addAll(ok, cancel);
-
-        GridPane grid = new GridPane();
-        grid.setHgap(12);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(12));
-
-        TextField editMa = new TextField(item.getMaKhoanThu());
-        TextField editTen = new TextField(item.getTenKhoanThu());
-        ComboBox<String> editLoai = new ComboBox<>(FXCollections.observableArrayList("BAT_BUOC", "TU_NGUYEN"));
-        editLoai.setValue(item.getLoaiPhi());
-        TextField editDonGia = new TextField(item.getDonGia() != null ? item.getDonGia().toString() : "");
-        DatePicker editNgay = new DatePicker(item.getNgayTao());
-        TextField editGhiChu = new TextField(item.getGhiChu());
-
-        grid.add(new Label("Mã khoản thu"), 0, 0);
-        grid.add(editMa, 1, 0);
-        grid.add(new Label("Tên khoản thu"), 0, 1);
-        grid.add(editTen, 1, 1);
-        grid.add(new Label("Loại phí"), 0, 2);
-        grid.add(editLoai, 1, 2);
-        grid.add(new Label("Đơn giá"), 0, 3);
-        grid.add(editDonGia, 1, 3);
-        grid.add(new Label("Ngày tạo"), 0, 4);
-        grid.add(editNgay, 1, 4);
-        grid.add(new Label("Ghi chú"), 0, 5);
-        grid.add(editGhiChu, 1, 5);
-
-        dialog.getDialogPane().setContent(grid);
-        Optional<ButtonType> res = dialog.showAndWait();
-        if (res.isPresent() && res.get() == ok) {
+        Optional<ButtonType> result = dialog.showAndWait();
+        if (result.isPresent() && result.get() == okButtonType) {
             try {
-                item.setMaKhoanThu(editMa.getText().trim());
-                item.setTenKhoanThu(editTen.getText().trim());
-                item.setLoaiPhi(editLoai.getValue());
-                item.setDonGia(new BigDecimal(editDonGia.getText().trim()));
-                item.setNgayTao(editNgay.getValue());
-                item.setGhiChu(editGhiChu.getText().trim());
-                boolean updated = feeService.updateFee(item);
-                if (updated) {
-                    showAlert(Alert.AlertType.INFORMATION, "Thành công", "Cập nhật khoản thu thành công.");
-                    loadData();
+                DanhMucPhi phi = adding ? new DanhMucPhi() : item;
+                phi.setMaPhi(txtCode.getText().trim().toUpperCase());
+                phi.setTenPhi(txtName.getText().trim());
+                phi.setLoaiPhi(cbType.getValue());
+                phi.setLoaiTinhGia(cbCalc.getValue());
+                phi.setDonGia(new BigDecimal(txtPrice.getText().trim()));
+                phi.setGhiChu(txtNote.getText().trim());
+
+                boolean success = adding ? fixedFeeService.addDanhMucPhi(phi) : fixedFeeService.updateDanhMucPhi(phi);
+                if (success) {
+                    showAlert(Alert.AlertType.INFORMATION, "Thành công", "Lưu thông tin phí cố định thành công.");
+                    loadFixedFees();
                 } else {
-                    showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể cập nhật khoản thu.");
+                    showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể lưu thông tin phí vào CSDL.");
                 }
             } catch (Exception e) {
-                showAlert(Alert.AlertType.ERROR, "Lỗi", "Dữ liệu nhập không hợp lệ.");
+                showAlert(Alert.AlertType.ERROR, "Lỗi", "Có lỗi xảy ra: " + e.getMessage());
             }
         }
     }
 
-    private void handleDelete(KhoanThu item) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+    private void handleDeleteFixedFee(DanhMucPhi item) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Bạn có chắc chắn muốn xóa phí '" + item.getTenPhi() + "'?", ButtonType.YES, ButtonType.NO);
         alert.setTitle("Xác nhận xóa");
         alert.setHeaderText(null);
-        alert.setContentText("Bạn có chắc chắn muốn xóa không?");
-        Optional<ButtonType> res = alert.showAndWait();
-        if (res.isPresent() && res.get() == ButtonType.OK) {
-            boolean deleted = feeService.deleteFee(item.getId());
-            if (deleted) {
-                showAlert(Alert.AlertType.INFORMATION, "Thành công", "Xóa khoản thu thành công.");
-                loadData();
+        if (alert.showAndWait().orElse(ButtonType.NO) == ButtonType.YES) {
+            if (fixedFeeService.deleteDanhMucPhi(item.getId())) {
+                showAlert(Alert.AlertType.INFORMATION, "Thành công", "Đã xóa phí cố định.");
+                loadFixedFees();
             } else {
-                showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể xóa khoản thu.");
+                showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể xóa phí cố định. Có thể có dữ liệu liên kết.");
             }
         }
     }
 
-    private void showAlert(Alert.AlertType type, String title, String content) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
-    }
-
-    private TableCell<KhoanThu, Void> actionCell() {
+    private TableCell<DanhMucPhi, Void> actionCellFixedFees() {
         return new TableCell<>() {
-            private final Button editButton = createActionButton("✎");
-            private final Button deleteButton = createActionButton("🗑");
-            private final HBox box = new HBox(8, editButton, deleteButton);
-
+            private final Button editBtn = createActionButton("✎");
+            private final Button deleteBtn = createActionButton("🗑");
+            private final HBox box = new HBox(8, editBtn, deleteBtn);
             {
                 box.setAlignment(Pos.CENTER);
-                editButton.setOnAction(event -> showEditDialog(getTableView().getItems().get(getIndex())));
-                deleteButton.setOnAction(event -> handleDelete(getTableView().getItems().get(getIndex())));
+                editBtn.setOnAction(e -> showFixedFeeDialog(getTableView().getItems().get(getIndex())));
+                deleteBtn.setOnAction(e -> handleDeleteFixedFee(getTableView().getItems().get(getIndex())));
             }
-
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
@@ -288,15 +251,374 @@ public class FeeController {
         };
     }
 
+    // --- TAB 2 ACTIONS ---
+
+    @FXML
+    void handleShowNewBillingRun(ActionEvent event) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Tạo đợt thu phí & Hóa đơn mới");
+        dialog.setHeaderText(null);
+
+        ButtonType okButtonType = new ButtonType("OK", ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(okButtonType, ButtonType.CANCEL);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+
+        TextField txtCode = new TextField("");
+        txtCode.setPromptText("vd: DOT_202606");
+        TextField txtName = new TextField("");
+        txtName.setPromptText("vd: Đợt thu phí Tháng 06/2026");
+
+        DatePicker dpCreated = new DatePicker(LocalDate.now());
+        DatePicker dpDue = new DatePicker(LocalDate.now().plusDays(15));
+        TextField txtNote = new TextField("");
+
+        grid.add(new Label("Mã đợt thu:"), 0, 0);
+        grid.add(txtCode, 1, 0);
+        grid.add(new Label("Tên đợt thu:"), 0, 1);
+        grid.add(txtName, 1, 1);
+        grid.add(new Label("Ngày tạo:"), 0, 2);
+        grid.add(dpCreated, 1, 2);
+        grid.add(new Label("Hạn nộp:"), 0, 3);
+        grid.add(dpDue, 1, 3);
+        grid.add(new Label("Ghi chú:"), 0, 4);
+        grid.add(txtNote, 1, 4);
+
+        dialog.getDialogPane().setContent(grid);
+
+        final Button btnOk = (Button) dialog.getDialogPane().lookupButton(okButtonType);
+        btnOk.addEventFilter(ActionEvent.ACTION, ae -> {
+            if (txtCode.getText().trim().isEmpty() || txtName.getText().trim().isEmpty() || dpCreated.getValue() == null || dpDue.getValue() == null) {
+                showAlert(Alert.AlertType.ERROR, "Lỗi", "Vui lòng nhập đầy đủ các trường thông tin!");
+                ae.consume();
+                return;
+            }
+            if (billingRunService.isMaKhoanThuExists(txtCode.getText().trim())) {
+                showAlert(Alert.AlertType.ERROR, "Lỗi", "Mã đợt thu này đã tồn tại!");
+                ae.consume();
+            }
+        });
+
+        Optional<ButtonType> result = dialog.showAndWait();
+        if (result.isPresent() && result.get() == okButtonType) {
+            try {
+                KhoanThu kt = new KhoanThu(
+                        0,
+                        txtCode.getText().trim().toUpperCase(),
+                        txtName.getText().trim(),
+                        "BAT_BUOC",
+                        BigDecimal.ZERO,
+                        dpCreated.getValue(),
+                        txtNote.getText().trim(),
+                        dpDue.getValue(),
+                        "DRAFT"
+                );
+                if (billingRunService.createFee(kt)) {
+                    showAlert(Alert.AlertType.INFORMATION, "Thành công", "Đợt thu nháp đã được khởi tạo và tự động tạo hóa đơn nháp cho tất cả các hộ dân!");
+                    loadBillingRuns();
+                } else {
+                    showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể tạo đợt thu phí.");
+                }
+            } catch (Exception e) {
+                showAlert(Alert.AlertType.ERROR, "Lỗi", "Lỗi: " + e.getMessage());
+            }
+        }
+    }
+
+    @FXML
+    void handleSearchRun(ActionEvent event) {
+        String kw = txtSearchRun.getText();
+        if (kw == null || kw.trim().isEmpty()) {
+            loadBillingRuns();
+            return;
+        }
+        billingRunList.setAll(billingRunService.searchFees(kw, kw, null, null, null));
+    }
+
+    @FXML
+    void handleResetRun(ActionEvent event) {
+        txtSearchRun.clear();
+        loadBillingRuns();
+    }
+
+    private void handleInputReadings(KhoanThu run) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Nhập số liệu chỉ số - " + run.getTenKhoanThu());
+        dialog.setHeaderText("Nhập các chỉ số tiêu thụ (Điện, Nước, Quỹ tự nguyện) cho các hộ dân.\nNhấn Lưu toàn bộ để cập nhật tất cả hóa đơn.");
+        dialog.getDialogPane().setMinWidth(800);
+        dialog.getDialogPane().setMinHeight(500);
+
+        ButtonType saveButtonType = new ButtonType("Lưu toàn bộ", ButtonData.OK_DONE);
+        ButtonType closeButtonType = new ButtonType("Hủy", ButtonData.CANCEL_CLOSE);
+        
+        boolean isDraft = "DRAFT".equals(run.getTrangThai());
+        if (isDraft) {
+            dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, closeButtonType);
+        } else {
+            dialog.getDialogPane().getButtonTypes().addAll(new ButtonType("Đóng", ButtonData.CANCEL_CLOSE));
+        }
+
+        // Get all invoices for this run
+        List<HoaDon> invoices = invoiceService.getInvoicesByRun(run.getId());
+
+        // Layout
+        GridPane grid = new GridPane();
+        grid.setHgap(20);
+        grid.setVgap(12);
+        grid.setPadding(new Insets(15));
+
+        // Headers
+        Label lblColHk = new Label("Căn Hộ");
+        Label lblColOwner = new Label("Chủ Hộ");
+        Label lblColDien = new Label("Điện (kWh)");
+        Label lblColNuoc = new Label("Nước (m³)");
+        Label lblColQuy = new Label("Quỹ Từ Thiện (đ)");
+
+        String headerStyle = "-fx-font-weight: bold; -fx-text-fill: #1e293b; -fx-font-size: 13px;";
+        lblColHk.setStyle(headerStyle);
+        lblColOwner.setStyle(headerStyle);
+        lblColDien.setStyle(headerStyle);
+        lblColNuoc.setStyle(headerStyle);
+        lblColQuy.setStyle(headerStyle);
+
+        grid.add(lblColHk, 0, 0);
+        grid.add(lblColOwner, 1, 0);
+        grid.add(lblColDien, 2, 0);
+        grid.add(lblColNuoc, 3, 0);
+        grid.add(lblColQuy, 4, 0);
+
+        // Keep track of textfields for saving
+        java.util.Map<Integer, java.util.Map<String, TextField>> inputsMap = new java.util.HashMap<>();
+        java.util.Map<Integer, List<ChiTietHoaDon>> detailsMap = new java.util.HashMap<>();
+
+        int rowIndex = 1;
+        for (HoaDon hd : invoices) {
+            Label lblHk = new Label(hd.getMaHoKhau());
+            Label lblOwner = new Label(hd.getTenChuHo());
+            lblHk.setStyle("-fx-font-weight: bold;");
+
+            grid.add(lblHk, 0, rowIndex);
+            grid.add(lblOwner, 1, rowIndex);
+
+            List<ChiTietHoaDon> details = invoiceService.getInvoiceDetails(hd.getId());
+            detailsMap.put(hd.getId(), details);
+
+            java.util.Map<String, TextField> feeTextFields = new java.util.HashMap<>();
+
+            ChiTietHoaDon dienDet = details.stream().filter(d -> "DIEN".equals(d.getMaPhi())).findFirst().orElse(null);
+            ChiTietHoaDon nuocDet = details.stream().filter(d -> "NUOC".equals(d.getMaPhi())).findFirst().orElse(null);
+            ChiTietHoaDon quyDet = details.stream().filter(d -> "QUYTUTHEN".equals(d.getMaPhi())).findFirst().orElse(null);
+
+            // Electricity input
+            TextField txtDien = new TextField(dienDet != null ? dienDet.getSoLuong().toString() : "0");
+            txtDien.setPrefWidth(100);
+            txtDien.setDisable(!isDraft);
+            setupNumericFormatter(txtDien);
+            grid.add(txtDien, 2, rowIndex);
+            feeTextFields.put("DIEN", txtDien);
+
+            // Water input
+            TextField txtNuoc = new TextField(nuocDet != null ? nuocDet.getSoLuong().toString() : "0");
+            txtNuoc.setPrefWidth(100);
+            txtNuoc.setDisable(!isDraft);
+            setupNumericFormatter(txtNuoc);
+            grid.add(txtNuoc, 3, rowIndex);
+            feeTextFields.put("NUOC", txtNuoc);
+
+            // Charity donation input
+            TextField txtQuy = new TextField(quyDet != null ? quyDet.getSoLuong().toString() : "0");
+            txtQuy.setPrefWidth(130);
+            txtQuy.setDisable(!isDraft);
+            setupNumericFormatter(txtQuy);
+            grid.add(txtQuy, 4, rowIndex);
+            feeTextFields.put("QUYTUTHEN", txtQuy);
+
+            inputsMap.put(hd.getId(), feeTextFields);
+            rowIndex++;
+        }
+
+        ScrollPane scrollPane = new ScrollPane(grid);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setPrefViewportHeight(400);
+        scrollPane.setStyle("-fx-background-color: transparent; -fx-border-color: #cbd5e1; -fx-border-radius: 6;");
+
+        dialog.getDialogPane().setContent(scrollPane);
+
+        if (isDraft) {
+            final Button btnSave = (Button) dialog.getDialogPane().lookupButton(saveButtonType);
+            btnSave.addEventFilter(ActionEvent.ACTION, ae -> {
+                try {
+                    for (HoaDon hd : invoices) {
+                        List<ChiTietHoaDon> details = detailsMap.get(hd.getId());
+                        java.util.Map<String, TextField> feeTextFields = inputsMap.get(hd.getId());
+
+                        ChiTietHoaDon dienDet = details.stream().filter(d -> "DIEN".equals(d.getMaPhi())).findFirst().orElse(null);
+                        ChiTietHoaDon nuocDet = details.stream().filter(d -> "NUOC".equals(d.getMaPhi())).findFirst().orElse(null);
+                        ChiTietHoaDon quyDet = details.stream().filter(d -> "QUYTUTHEN".equals(d.getMaPhi())).findFirst().orElse(null);
+
+                        if (dienDet != null) {
+                            String val = feeTextFields.get("DIEN").getText().trim();
+                            dienDet.setSoLuong(val.isEmpty() ? BigDecimal.ZERO : new BigDecimal(val));
+                        }
+                        if (nuocDet != null) {
+                            String val = feeTextFields.get("NUOC").getText().trim();
+                            nuocDet.setSoLuong(val.isEmpty() ? BigDecimal.ZERO : new BigDecimal(val));
+                        }
+                        if (quyDet != null) {
+                            String val = feeTextFields.get("QUYTUTHEN").getText().trim();
+                            quyDet.setSoLuong(val.isEmpty() ? BigDecimal.ZERO : new BigDecimal(val));
+                        }
+
+                        invoiceService.saveInvoiceDetails(hd.getId(), details);
+                    }
+                    showAlert(Alert.AlertType.INFORMATION, "Thành công", "Đã lưu toàn bộ chỉ số cho các hộ gia đình thành công!");
+                } catch (Exception e) {
+                    showAlert(Alert.AlertType.ERROR, "Lỗi", "Có lỗi xảy ra khi lưu chỉ số: " + e.getMessage());
+                    ae.consume();
+                }
+            });
+        }
+
+        dialog.showAndWait();
+        loadBillingRuns();
+    }
+
+    private void setupNumericFormatter(TextField textField) {
+        textField.setTextFormatter(new TextFormatter<>(change -> {
+            if (change.getControlNewText().matches("\\d*\\.?\\d*")) return change;
+            return null;
+        }));
+    }
+
+    private void handlePublishRun(KhoanThu run) {
+        // 1. Lấy danh sách hóa đơn hiện tại của đợt thu
+        List<HoaDon> invoices = invoiceService.getInvoicesByRun(run.getId());
+        if (invoices.isEmpty()) {
+            // Không có hóa đơn nào, tiến hành tự động tạo
+            try {
+                com.bluemoon.repositories.HoaDonRepository hdRepo = new com.bluemoon.repositories.HoaDonRepository();
+                boolean generated = hdRepo.createDraftInvoicesForRun(run.getId(), run.getNgayTao(), run.getHanNop());
+                if (!generated) {
+                    showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể tự động tạo hóa đơn cho đợt thu này.");
+                    return;
+                }
+                invoices = invoiceService.getInvoicesByRun(run.getId());
+                if (invoices.isEmpty()) {
+                    showAlert(Alert.AlertType.ERROR, "Lỗi", "Không tìm thấy dữ liệu hộ dân nào để phát hành hóa đơn!");
+                    return;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                showAlert(Alert.AlertType.ERROR, "Lỗi SQL", "Lỗi phát sinh khi tạo hóa đơn nháp: " + e.getMessage());
+                return;
+            }
+        }
+
+        // 2. Kiểm tra xem có hóa đơn nào có tổng tiền lớn hơn 0 hay chưa.
+        // Đối với các phí tự nguyện hoặc đợt thu nói chung, nếu admin chưa nhập số liệu gì (tất cả có tổng tiền = 0)
+        // thì hiển thị Alert báo lỗi và không cho phép phát hành.
+        boolean hasData = false;
+        for (HoaDon inv : invoices) {
+            if (inv.getTongTien().compareTo(BigDecimal.ZERO) > 0) {
+                hasData = true;
+                break;
+            }
+        }
+
+        if (!hasData) {
+            showAlert(Alert.AlertType.ERROR, "Lỗi", "Đợt thu chưa có dữ liệu chỉ số hoặc đóng góp nào (Tất cả hóa đơn có số tiền = 0). Vui lòng nhập số liệu trước khi phát hành!");
+            return;
+        }
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Bạn có muốn phát hành đợt thu '" + run.getTenKhoanThu() + "'?\nSau khi phát hành, hóa đơn sẽ được công bố chính thức cho cư dân và ghi nợ công nợ bắt buộc, không thể chỉnh sửa chỉ số nữa.", ButtonType.YES, ButtonType.NO);
+        alert.setTitle("Xác nhận phát hành hóa đơn");
+        alert.setHeaderText(null);
+        if (alert.showAndWait().orElse(ButtonType.NO) == ButtonType.YES) {
+            run.setTrangThai("PUBLISHED");
+            try {
+                if (billingRunService.updateFee(run)) {
+                    showAlert(Alert.AlertType.INFORMATION, "Thành công", "Đợt thu đã được phát hành chính thức!");
+                    loadBillingRuns();
+                } else {
+                    showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể cập nhật trạng thái đợt thu.");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                showAlert(Alert.AlertType.ERROR, "Lỗi SQL", "Lỗi khi cập nhật trạng thái: " + e.getMessage());
+            }
+        }
+    }
+
+    private void handleDeleteRun(KhoanThu run) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Bạn có muốn xóa đợt thu '" + run.getTenKhoanThu() + "'?\nTất cả hóa đơn và chi tiết liên quan sẽ bị xóa vĩnh viễn.", ButtonType.YES, ButtonType.NO);
+        alert.setTitle("Xác nhận xóa đợt thu");
+        alert.setHeaderText(null);
+        if (alert.showAndWait().orElse(ButtonType.NO) == ButtonType.YES) {
+            if (billingRunService.deleteFee(run.getId())) {
+                showAlert(Alert.AlertType.INFORMATION, "Thành công", "Đã xóa đợt thu.");
+                loadBillingRuns();
+            } else {
+                showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể xóa đợt thu.");
+            }
+        }
+    }
+
+    private TableCell<KhoanThu, Void> actionCellBillingRuns() {
+        return new TableCell<>() {
+            private final Button editBtn = createActionButton("Chi tiết");
+            private final Button pubBtn = createActionButton("Phát hành");
+            private final Button deleteBtn = createActionButton("🗑");
+            private final HBox box = new HBox(6, editBtn, pubBtn, deleteBtn);
+            {
+                box.setAlignment(Pos.CENTER);
+                editBtn.setOnAction(e -> handleInputReadings(getTableView().getItems().get(getIndex())));
+                pubBtn.setOnAction(e -> handlePublishRun(getTableView().getItems().get(getIndex())));
+                deleteBtn.setOnAction(e -> handleDeleteRun(getTableView().getItems().get(getIndex())));
+            }
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    KhoanThu kt = getTableView().getItems().get(getIndex());
+                    if ("PUBLISHED".equals(kt.getTrangThai())) {
+                        pubBtn.setDisable(true);
+                        pubBtn.setText("Đã gửi");
+                        editBtn.setText("Chi tiết");
+                        deleteBtn.setDisable(true);
+                    } else {
+                        pubBtn.setDisable(false);
+                        pubBtn.setText("Phát hành");
+                        editBtn.setText("Nhập chỉ số");
+                        deleteBtn.setDisable(false);
+                    }
+                    setGraphic(box);
+                }
+                setAlignment(Pos.CENTER);
+            }
+        };
+    }
+
     private Button createActionButton(String content) {
         Button button = new Button(content);
-        button.setMinSize(34, 30);
         button.setStyle(
-                "-fx-background-color: #eef3f8; -fx-background-radius: 7; -fx-font-weight: bold; -fx-cursor: hand;");
+                "-fx-background-color: #eef3f8; -fx-background-radius: 7; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 5 10;");
         button.setOnMouseEntered(event -> button.setStyle(
-                "-fx-background-color: #d9e7f5; -fx-background-radius: 7; -fx-font-weight: bold; -fx-cursor: hand;"));
+                "-fx-background-color: #d9e7f5; -fx-background-radius: 7; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 5 10;"));
         button.setOnMouseExited(event -> button.setStyle(
-                "-fx-background-color: #eef3f8; -fx-background-radius: 7; -fx-font-weight: bold; -fx-cursor: hand;"));
+                "-fx-background-color: #eef3f8; -fx-background-radius: 7; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 5 10;"));
         return button;
+    }
+
+    private void showAlert(Alert.AlertType type, String title, String content) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
     }
 }

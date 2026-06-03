@@ -34,6 +34,8 @@
                   <TableColumn fx:id="colTrangThai" minWidth="90.0" prefWidth="105.0" text="Trạng thái" />
                   <TableColumn fx:id="colSoNguoi" minWidth="70.0" prefWidth="80.0" text="Số người" />
                   <TableColumn fx:id="colPhuongTien" minWidth="110.0" prefWidth="140.0" text="Phương tiện" />
+                  <TableColumn fx:id="colSoXeMay" minWidth="75.0" prefWidth="85.0" text="Số xe máy" />
+                  <TableColumn fx:id="colSoOto" minWidth="75.0" prefWidth="85.0" text="Số ô tô" />
                   <TableColumn fx:id="colNgayLap" minWidth="100.0" prefWidth="115.0" text="Ngày lập" />
                   <TableColumn fx:id="colHoatDong" minWidth="120.0" prefWidth="135.0" text="Hoạt động" />
                </columns>

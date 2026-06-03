@@ -37,6 +37,8 @@ public class HouseholdController {
     @FXML private TableColumn<HoKhau, String> colTrangThai;
     @FXML private TableColumn<HoKhau, Integer> colSoNguoi;
     @FXML private TableColumn<HoKhau, String> colPhuongTien;
+    @FXML private TableColumn<HoKhau, Integer> colSoXeMay;
+    @FXML private TableColumn<HoKhau, Integer> colSoOto;
     @FXML private TableColumn<HoKhau, LocalDate> colNgayLap;
     @FXML private TableColumn<HoKhau, Void> colHoatDong;
 
@@ -53,6 +55,8 @@ public class HouseholdController {
         colTrangThai.setCellValueFactory(row -> new SimpleStringProperty(row.getValue().getTrangThai()));
         colSoNguoi.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getSoNguoi()));
         colPhuongTien.setCellValueFactory(row -> new SimpleStringProperty(row.getValue().getPhuongTien()));
+        colSoXeMay.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getSoXeMay()));
+        colSoOto.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getSoOto()));
         colNgayLap.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getNgayLap()));
         colHoatDong.setCellFactory(col -> actionCell());
         tableHoKhau.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
@@ -218,6 +222,8 @@ public class HouseholdController {
         private final ComboBox<String> trangThai = new ComboBox<>();
         private final TextField soNguoi = new TextField();
         private final TextField phuongTien = new TextField();
+        private final TextField soXeMay = new TextField();
+        private final TextField soOto = new TextField();
         private final DatePicker ngayLap = new DatePicker();
 
         HouseholdForm(boolean includeDate) {
@@ -226,6 +232,8 @@ public class HouseholdController {
             phuongTien.setPromptText("Xe máy, ô tô hoặc số lượng");
             dienTich.setTextFormatter(decimalFormatter());
             soNguoi.setTextFormatter(integerFormatter());
+            soXeMay.setTextFormatter(integerFormatter());
+            soOto.setTextFormatter(integerFormatter());
             trangThai.getItems().addAll(STATUSES);
             grid.setHgap(14);
             grid.setVgap(12);
@@ -236,7 +244,9 @@ public class HouseholdController {
             add("Trạng thái", trangThai, 3);
             add("Số người", soNguoi, 4);
             add("Phương tiện", phuongTien, 5);
-            if (includeDate) add("Ngày lập", ngayLap, 6);
+            add("Số xe máy", soXeMay, 6);
+            add("Số ô tô", soOto, 7);
+            if (includeDate) add("Ngày lập", ngayLap, 8);
         }
 
         void populate(HoKhau household) {
@@ -246,18 +256,21 @@ public class HouseholdController {
             trangThai.setValue(household.getTrangThai());
             soNguoi.setText(String.valueOf(household.getSoNguoi()));
             phuongTien.setText(household.getPhuongTien());
+            soXeMay.setText(String.valueOf(household.getSoXeMay()));
+            soOto.setText(String.valueOf(household.getSoOto()));
             ngayLap.setValue(household.getNgayLap());
         }
 
         HoKhau toHousehold(int id) {
             if (ma.getText().isBlank() || ten.getText().isBlank() || dienTich.getText().isBlank()
                     || trangThai.getValue() == null || soNguoi.getText().isBlank()
-                    || phuongTien.getText().isBlank() || ngayLap.getValue() == null) {
+                    || phuongTien.getText().isBlank() || ngayLap.getValue() == null
+                    || soXeMay.getText().isBlank() || soOto.getText().isBlank()) {
                 throw new IllegalArgumentException("Vui lòng nhập đầy đủ thông tin.");
             }
             return new HoKhau(id, ma.getText().trim(), ten.getText().trim(), new BigDecimal(dienTich.getText()),
                     trangThai.getValue(), Integer.parseInt(soNguoi.getText()), phuongTien.getText().trim(),
-                    ngayLap.getValue());
+                    ngayLap.getValue(), Integer.parseInt(soXeMay.getText().trim()), Integer.parseInt(soOto.getText().trim()));
         }
 
         private void add(String label, Control field, int row) {

@@ -12,6 +12,8 @@ public class HoKhau {
     private int soNguoi;
     private String phuongTien;
     private LocalDate ngayLap;
+    private int soXeMay;
+    private int soOto;
 
     public HoKhau() {
     }
@@ -26,6 +28,22 @@ public class HoKhau {
         this.soNguoi = soNguoi;
         this.phuongTien = phuongTien;
         this.ngayLap = ngayLap;
+        this.soXeMay = 0;
+        this.soOto = 0;
+    }
+
+    public HoKhau(int id, String maHoKhau, String tenChuHo, BigDecimal dienTich, String trangThai,
+            int soNguoi, String phuongTien, LocalDate ngayLap, int soXeMay, int soOto) {
+        this.id = id;
+        this.maHoKhau = maHoKhau;
+        this.tenChuHo = tenChuHo;
+        this.dienTich = dienTich;
+        this.trangThai = trangThai;
+        this.soNguoi = soNguoi;
+        this.phuongTien = phuongTien;
+        this.ngayLap = ngayLap;
+        this.soXeMay = soXeMay;
+        this.soOto = soOto;
     }
 
     public int getId() { return id; }
@@ -44,4 +62,8 @@ public class HoKhau {
     public void setPhuongTien(String phuongTien) { this.phuongTien = phuongTien; }
     public LocalDate getNgayLap() { return ngayLap; }
     public void setNgayLap(LocalDate ngayLap) { this.ngayLap = ngayLap; }
+    public int getSoXeMay() { return soXeMay; }
+    public void setSoXeMay(int soXeMay) { this.soXeMay = soXeMay; }
+    public int getSoOto() { return soOto; }
+    public void setSoOto(int soOto) { this.soOto = soOto; }
 }

@@ -49,7 +49,7 @@ public class HouseholdRepository {
 
     public boolean insert(HoKhau hoKhau) {
         ensureExtendedSchema();
-        String sql = "INSERT INTO ho_khau (ma_ho_khau, ten_chu_ho, dien_tich, status, so_nguoi, phuong_tien, ngay_lap) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO ho_khau (ma_ho_khau, ten_chu_ho, dien_tich, status, so_nguoi, phuong_tien, ngay_lap, so_xe_may, so_oto) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
             setFields(pstmt, hoKhau);
@@ -62,11 +62,11 @@ public class HouseholdRepository {
 
     public boolean update(HoKhau hoKhau) {
         ensureExtendedSchema();
-        String sql = "UPDATE ho_khau SET ma_ho_khau = ?, ten_chu_ho = ?, dien_tich = ?, status = ?, so_nguoi = ?, phuong_tien = ?, ngay_lap = ? WHERE id = ?";
+        String sql = "UPDATE ho_khau SET ma_ho_khau = ?, ten_chu_ho = ?, dien_tich = ?, status = ?, so_nguoi = ?, phuong_tien = ?, ngay_lap = ?, so_xe_may = ?, so_oto = ? WHERE id = ?";
         try (Connection conn = DBConnection.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
             setFields(pstmt, hoKhau);
-            pstmt.setInt(8, hoKhau.getId());
+            pstmt.setInt(10, hoKhau.getId());
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -126,7 +126,8 @@ public class HouseholdRepository {
     private HoKhau map(ResultSet rs) throws SQLException {
         return new HoKhau(rs.getInt("id"), rs.getString("ma_ho_khau"), rs.getString("ten_chu_ho"),
                 rs.getBigDecimal("dien_tich"), rs.getString("status"), rs.getInt("so_nguoi"),
-                rs.getString("phuong_tien"), rs.getDate("ngay_lap").toLocalDate());
+                rs.getString("phuong_tien"), rs.getDate("ngay_lap").toLocalDate(),
+                rs.getInt("so_xe_may"), rs.getInt("so_oto"));
     }
 
     private void setFields(PreparedStatement pstmt, HoKhau hoKhau) throws SQLException {
@@ -137,6 +138,8 @@ public class HouseholdRepository {
         pstmt.setInt(5, hoKhau.getSoNguoi());
         pstmt.setString(6, hoKhau.getPhuongTien());
         pstmt.setDate(7, Date.valueOf(hoKhau.getNgayLap()));
+        pstmt.setInt(8, hoKhau.getSoXeMay());
+        pstmt.setInt(9, hoKhau.getSoOto());
     }
 
     private void addLike(StringBuilder sql, List<Object> params, String column, String value) {
@@ -163,6 +166,12 @@ public class HouseholdRepository {
             }
             if (!hasColumn(conn, "phuong_tien")) {
                 execute(conn, "ALTER TABLE ho_khau ADD COLUMN phuong_tien VARCHAR(255) NOT NULL DEFAULT 'Chưa cập nhật' AFTER so_nguoi");
+            }
+            if (!hasColumn(conn, "so_xe_may")) {
+                execute(conn, "ALTER TABLE ho_khau ADD COLUMN so_xe_may INT NOT NULL DEFAULT 0 AFTER ngay_lap");
+            }
+            if (!hasColumn(conn, "so_oto")) {
+                execute(conn, "ALTER TABLE ho_khau ADD COLUMN so_oto INT NOT NULL DEFAULT 0 AFTER so_xe_may");
             }
             if (addedPeopleColumn) {
                 execute(conn, "UPDATE ho_khau hk LEFT JOIN (SELECT ho_khau_id, COUNT(*) AS total FROM nhan_khau GROUP BY ho_khau_id) nk ON nk.ho_khau_id = hk.id SET hk.so_nguoi = COALESCE(nk.total, 0)");
