@@ -11,6 +11,8 @@ public class KhoanThu {
     private BigDecimal donGia;
     private LocalDate ngayTao;
     private String ghiChu;
+    private LocalDate hanNop;
+    private String trangThai; // 'DRAFT', 'PUBLISHED'
 
     public KhoanThu() {}
 
@@ -22,6 +24,19 @@ public class KhoanThu {
         this.donGia = donGia;
         this.ngayTao = ngayTao;
         this.ghiChu = ghiChu;
+        this.trangThai = "DRAFT";
+    }
+
+    public KhoanThu(int id, String maKhoanThu, String tenKhoanThu, String loaiPhi, BigDecimal donGia, LocalDate ngayTao, String ghiChu, LocalDate hanNop, String trangThai) {
+        this.id = id;
+        this.maKhoanThu = maKhoanThu;
+        this.tenKhoanThu = tenKhoanThu;
+        this.loaiPhi = loaiPhi;
+        this.donGia = donGia;
+        this.ngayTao = ngayTao;
+        this.ghiChu = ghiChu;
+        this.hanNop = hanNop;
+        this.trangThai = trangThai;
     }
 
     public int getId() {
@@ -78,5 +93,21 @@ public class KhoanThu {
 
     public void setGhiChu(String ghiChu) {
         this.ghiChu = ghiChu;
+    }
+
+    public LocalDate getHanNop() {
+        return hanNop;
+    }
+
+    public void setHanNop(LocalDate hanNop) {
+        this.hanNop = hanNop;
+    }
+
+    public String getTrangThai() {
+        return trangThai;
+    }
+
+    public void setTrangThai(String trangThai) {
+        this.trangThai = trangThai;
     }
 }

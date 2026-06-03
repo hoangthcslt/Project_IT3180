@@ -46,8 +46,8 @@
             <Button fx:id="btnTrangChu" maxWidth="Infinity" mnemonicParsing="false" onAction="#handleTrangChu" text="Trang chủ" style="-fx-background-color: #ecf0f1; -fx-font-weight: bold; -fx-padding: 10px;" />
             <Button fx:id="btnHoKhau" maxWidth="Infinity" mnemonicParsing="false" onAction="#handleHoKhau" text="Hộ khẩu" style="-fx-background-color: #ecf0f1; -fx-font-weight: bold; -fx-padding: 10px;" />
             <Button fx:id="btnNhanKhau" maxWidth="Infinity" mnemonicParsing="false" onAction="#handleNhanKhau" text="Nhân khẩu" style="-fx-background-color: #ecf0f1; -fx-font-weight: bold; -fx-padding: 10px;" />
-            <Button fx:id="btnKhoanThu" maxWidth="Infinity" mnemonicParsing="false" onAction="#handleKhoanThu" text="Khoản thu" style="-fx-background-color: #ecf0f1; -fx-font-weight: bold; -fx-padding: 10px;" />
-            <Button fx:id="btnNopTien" maxWidth="Infinity" mnemonicParsing="false" onAction="#handleNopTien" text="Nộp tiền" style="-fx-background-color: #ecf0f1; -fx-font-weight: bold; -fx-padding: 10px;" />
+            <Button fx:id="btnKhoanThu" maxWidth="Infinity" mnemonicParsing="false" onAction="#handleKhoanThu" text="Hóa đơn" style="-fx-background-color: #ecf0f1; -fx-font-weight: bold; -fx-padding: 10px;" />
+            <Button fx:id="btnNopTien" maxWidth="Infinity" mnemonicParsing="false" onAction="#handleNopTien" text="Thanh toán" style="-fx-background-color: #ecf0f1; -fx-font-weight: bold; -fx-padding: 10px;" />
             <Button fx:id="btnThongKe" maxWidth="Infinity" mnemonicParsing="false" onAction="#handleThongKe" text="Thống kê" style="-fx-background-color: #ecf0f1; -fx-font-weight: bold; -fx-padding: 10px;" />
             <Button fx:id="btnPhanQuyen" maxWidth="Infinity" mnemonicParsing="false" onAction="#handlePhanQuyen" text="Phân quyền" style="-fx-background-color: #ecf0f1; -fx-font-weight: bold; -fx-padding: 10px;" />
             <Button fx:id="btnTienIch" maxWidth="Infinity" mnemonicParsing="false" onAction="#handleTienIch" text="Tiện ích" style="-fx-background-color: #ecf0f1; -fx-font-weight: bold; -fx-padding: 10px;" />

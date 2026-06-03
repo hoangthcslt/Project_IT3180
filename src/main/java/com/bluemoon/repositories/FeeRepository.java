@@ -27,7 +27,9 @@ public class FeeRepository {
                         rs.getString("loai_phi"),
                         rs.getBigDecimal("don_gia"),
                         rs.getDate("ngay_tao").toLocalDate(),
-                        rs.getString("ghi_chu"));
+                        rs.getString("ghi_chu"),
+                        rs.getDate("han_nop") != null ? rs.getDate("han_nop").toLocalDate() : null,
+                        rs.getString("trang_thai"));
                 list.add(kt);
             }
         } catch (SQLException e) {
@@ -53,9 +55,9 @@ public class FeeRepository {
     }
 
     public boolean insert(KhoanThu khoanThu) {
-        String sql = "INSERT INTO khoan_thu (ma_khoan_thu, ten_khoan_thu, loai_phi, don_gia, ngay_tao, ghi_chu) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO khoan_thu (ma_khoan_thu, ten_khoan_thu, loai_phi, don_gia, ngay_tao, ghi_chu, han_nop, trang_thai) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             pstmt.setString(1, khoanThu.getMaKhoanThu());
             pstmt.setString(2, khoanThu.getTenKhoanThu());
@@ -63,9 +65,22 @@ public class FeeRepository {
             pstmt.setBigDecimal(4, khoanThu.getDonGia());
             pstmt.setDate(5, Date.valueOf(khoanThu.getNgayTao()));
             pstmt.setString(6, khoanThu.getGhiChu());
+            if (khoanThu.getHanNop() != null) {
+                pstmt.setDate(7, Date.valueOf(khoanThu.getHanNop()));
+            } else {
+                pstmt.setNull(7, Types.DATE);
+            }
+            pstmt.setString(8, khoanThu.getTrangThai() != null ? khoanThu.getTrangThai() : "DRAFT");
 
             int rowsAffected = pstmt.executeUpdate();
-            return rowsAffected > 0;
+            if (rowsAffected > 0) {
+                try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        khoanThu.setId(generatedKeys.getInt(1));
+                    }
+                }
+                return true;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -73,7 +88,7 @@ public class FeeRepository {
     }
 
     public boolean update(KhoanThu khoanThu) {
-        String sql = "UPDATE khoan_thu SET ma_khoan_thu = ?, ten_khoan_thu = ?, loai_phi = ?, don_gia = ?, ngay_tao = ?, ghi_chu = ? WHERE id = ?";
+        String sql = "UPDATE khoan_thu SET ma_khoan_thu = ?, ten_khoan_thu = ?, loai_phi = ?, don_gia = ?, ngay_tao = ?, ghi_chu = ?, han_nop = ?, trang_thai = ? WHERE id = ?";
         try (Connection conn = DBConnection.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, khoanThu.getMaKhoanThu());
@@ -86,7 +101,13 @@ public class FeeRepository {
                 pstmt.setNull(5, Types.DATE);
             }
             pstmt.setString(6, khoanThu.getGhiChu());
-            pstmt.setInt(7, khoanThu.getId());
+            if (khoanThu.getHanNop() != null) {
+                pstmt.setDate(7, Date.valueOf(khoanThu.getHanNop()));
+            } else {
+                pstmt.setNull(7, Types.DATE);
+            }
+            pstmt.setString(8, khoanThu.getTrangThai());
+            pstmt.setInt(9, khoanThu.getId());
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -151,7 +172,9 @@ public class FeeRepository {
                             rs.getString("loai_phi"),
                             rs.getBigDecimal("don_gia"),
                             rs.getDate("ngay_tao") != null ? rs.getDate("ngay_tao").toLocalDate() : null,
-                            rs.getString("ghi_chu"));
+                            rs.getString("ghi_chu"),
+                            rs.getDate("han_nop") != null ? rs.getDate("han_nop").toLocalDate() : null,
+                            rs.getString("trang_thai"));
                     list.add(kt);
                 }
             }
@@ -162,43 +185,25 @@ public class FeeRepository {
     }
 
     /**
-     * Tính toán công nợ động (Diện tích * Đơn giá - Đã nộp)
+     * Tính toán công nợ động dựa trên hóa đơn của hộ khẩu
      */
     public BigDecimal calculateDebt(int hoKhauId, int khoanThuId) {
-        String sql = "SELECT " +
-                "   hk.dien_tich, " +
-                "   kt.don_gia, " +
-                "   COALESCE(SUM(nt.so_tien_nop), 0) AS tong_da_nop " +
-                "FROM ho_khau hk " +
-                "CROSS JOIN khoan_thu kt " +
-                "LEFT JOIN nop_tien nt ON nt.ho_khau_id = hk.id AND nt.khoan_thu_id = kt.id " +
-                "WHERE hk.id = ? AND kt.id = ?";
-
-        BigDecimal debt = BigDecimal.ZERO;
-
+        String sql = "SELECT tong_tien, so_tien_da_nop FROM hoa_don WHERE ho_khau_id = ? AND khoan_thu_id = ?";
         try (Connection conn = DBConnection.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
             pstmt.setInt(1, hoKhauId);
             pstmt.setInt(2, khoanThuId);
-
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    BigDecimal dienTich = rs.getBigDecimal("dien_tich");
-                    BigDecimal donGia = rs.getBigDecimal("don_gia");
-                    BigDecimal tongDaNop = rs.getBigDecimal("tong_da_nop");
-
-                    if (dienTich != null && donGia != null) {
-                        BigDecimal totalFee = dienTich.multiply(donGia);
-                        debt = totalFee.subtract(tongDaNop != null ? tongDaNop : BigDecimal.ZERO);
-                    }
+                    BigDecimal total = rs.getBigDecimal("tong_tien");
+                    BigDecimal paid = rs.getBigDecimal("so_tien_da_nop");
+                    BigDecimal debt = total.subtract(paid);
+                    return debt.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : debt;
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
-        // Nếu số tiền nợ < 0 (nộp dư), có thể trả về 0 hoặc giữ nguyên số âm tùy logic
-        return debt.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : debt;
+        return BigDecimal.ZERO;
     }
 }

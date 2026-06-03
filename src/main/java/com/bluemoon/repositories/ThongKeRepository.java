@@ -39,14 +39,10 @@ public class ThongKeRepository {
         String sqlNhanKhau = "SELECT COUNT(*) FROM nhan_khau";
         String sqlHoKhau = "SELECT COUNT(*) FROM ho_khau";
         String sqlDoanhThu = "SELECT COALESCE(SUM(so_tien_nop), 0) FROM nop_tien";
-        String sqlNo = "SELECT SUM(no_phai_tra) FROM (" +
-                       "  SELECT GREATEST(hk.dien_tich * kt.don_gia - COALESCE(SUM(nt.so_tien_nop), 0), 0) AS no_phai_tra " +
-                       "  FROM ho_khau hk " +
-                       "  CROSS JOIN khoan_thu kt " +
-                       "  LEFT JOIN nop_tien nt ON nt.ho_khau_id = hk.id AND nt.khoan_thu_id = kt.id " +
-                       "  GROUP BY hk.id, kt.id, hk.dien_tich, kt.don_gia " +
-                       "  HAVING COALESCE(SUM(nt.so_tien_nop), 0) < hk.dien_tich * kt.don_gia" +
-                       ") t";
+        String sqlNo = "SELECT COALESCE(SUM(hd.tong_tien - hd.so_tien_da_nop), 0) " +
+                       "FROM hoa_don hd " +
+                       "JOIN khoan_thu kt ON hd.khoan_thu_id = kt.id " +
+                       "WHERE hd.trang_thai = 'CHUA_NOP' AND kt.trang_thai = 'PUBLISHED' AND kt.loai_phi = 'BAT_BUOC'";
 
         try (Connection conn = DBConnection.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(sqlNhanKhau); ResultSet rs = ps.executeQuery()) {
@@ -107,15 +103,10 @@ public class ThongKeRepository {
         String sql = "SELECT " +
                      "  kt.id, " +
                      "  kt.ten_khoan_thu, " +
-                     "  SUM(COALESCE(paid_sub.tong_nop, 0)) AS tong_da_nop, " +
-                     "  SUM(GREATEST(hk.dien_tich * kt.don_gia - COALESCE(paid_sub.tong_nop, 0), 0)) AS tong_chua_nop " +
+                     "  COALESCE(SUM(hd.so_tien_da_nop), 0) AS tong_da_nop, " +
+                     "  COALESCE(SUM(CASE WHEN hd.trang_thai = 'CHUA_NOP' AND kt.loai_phi = 'BAT_BUOC' THEN (hd.tong_tien - hd.so_tien_da_nop) ELSE 0 END), 0) AS tong_chua_nop " +
                      "FROM khoan_thu kt " +
-                     "CROSS JOIN ho_khau hk " +
-                     "LEFT JOIN (" +
-                     "  SELECT ho_khau_id, khoan_thu_id, SUM(so_tien_nop) AS tong_nop " +
-                     "  FROM nop_tien " +
-                     "  GROUP BY ho_khau_id, khoan_thu_id" +
-                     ") paid_sub ON paid_sub.ho_khau_id = hk.id AND paid_sub.khoan_thu_id = kt.id " +
+                     "LEFT JOIN hoa_don hd ON hd.khoan_thu_id = kt.id " +
                      "GROUP BY kt.id, kt.ten_khoan_thu";
 
         try (Connection conn = DBConnection.getConnection();

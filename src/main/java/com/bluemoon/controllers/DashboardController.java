@@ -184,7 +184,7 @@ public class DashboardController {
                 createDashboardCard("Hộ khẩu", lblHouseholdTotal, null, "⌂", "#2f80ed", this::showHouseholdListView),
                 createDashboardCard("Nhân khẩu", lblResidentTotal, null, "●", "#27ae60", this::showResidentListView),
                 createDashboardCard("Khoản thu", lblFeeTotal, null, "$", "#f2994a", this::showFeeListView),
-                createDashboardCard("Nộp tiền", lblPaidTotal, lblUnpaidTotal, "▣", "#9b51e0",
+                createDashboardCard("Hóa đơn", lblPaidTotal, lblUnpaidTotal, "▣", "#9b51e0",
                         this::showPaymentStatusView));
 
         FlowPane statsRow = new FlowPane();
