@@ -20,7 +20,10 @@ public class PermissionRepository {
             new Permission("KHOAN_THU", "Khoản thu"),
             new Permission("NOP_TIEN", "Nộp tiền"),
             new Permission("THONG_KE", "Thống kê"),
-            new Permission("PHAN_QUYEN", "Phân quyền"), new Permission("TIEN_ICH", "Tiện ích")
+            new Permission("PHAN_QUYEN", "Phân quyền"),
+            new Permission("TIEN_ICH", "Tiện ích"),
+            new Permission("PHAN_ANH_GUI", "Gửi phản ánh"),
+            new Permission("PHAN_ANH_TIEP_NHAN", "Tiếp nhận phản ánh")
     };
 
     public PermissionRepository() {

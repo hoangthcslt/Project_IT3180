@@ -142,3 +142,5 @@ CREATE TABLE IF NOT EXISTS `user_read_notification` (
   FOREIGN KEY (`thong_bao_id`) REFERENCES `thong_bao`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- 9. Sửa cột role trong bảng users để hỗ trợ các nhóm phân quyền linh hoạt
+ALTER TABLE `users` MODIFY COLUMN `role` VARCHAR(100) NOT NULL;

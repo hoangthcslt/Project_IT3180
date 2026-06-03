@@ -45,8 +45,7 @@
                                 <TableColumn fx:id="colGroupName" prefWidth="170.0" text="Tên nhóm" />
                                 <TableColumn fx:id="colGroupDesc" prefWidth="300.0" text="Mô tả" />
                                 <TableColumn fx:id="colPermission" prefWidth="95.0" text="Phân quyền" />
-                                <TableColumn fx:id="colEdit" prefWidth="70.0" text="Sửa" />
-                                <TableColumn fx:id="colDelete" prefWidth="70.0" text="Xóa" />
+                                <TableColumn fx:id="colGroupAction" prefWidth="140.0" text="Hành động" />
                             </columns>
                         </TableView>
                     </VBox>

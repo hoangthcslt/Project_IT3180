@@ -45,9 +45,7 @@ public class PermissionController {
     @FXML
     private TableColumn<UserGroup, Void> colPermission;
     @FXML
-    private TableColumn<UserGroup, Void> colEdit;
-    @FXML
-    private TableColumn<UserGroup, Void> colDelete;
+    private TableColumn<UserGroup, Void> colGroupAction;
 
     @FXML
     private TextField txtSearchUser;
@@ -162,8 +160,23 @@ public class PermissionController {
         colGroupName.setCellValueFactory(new PropertyValueFactory<>("tenNhom"));
         colGroupDesc.setCellValueFactory(new PropertyValueFactory<>("moTa"));
         colPermission.setCellFactory(col -> actionCell("🔐", group -> showPermissionDialog(group)));
-        colEdit.setCellFactory(col -> actionCell("✎", group -> showGroupDialog(group)));
-        colDelete.setCellFactory(col -> actionCell("🗑", this::confirmDeleteGroup));
+        colGroupAction.setCellFactory(col -> new TableCell<>() {
+            private final Button editButton = createIconButton("✎");
+            private final Button deleteButton = createIconButton("🗑");
+            private final HBox box = new HBox(6, editButton, deleteButton);
+
+            {
+                box.setAlignment(Pos.CENTER);
+                editButton.setOnAction(event -> showGroupDialog(getTableView().getItems().get(getIndex())));
+                deleteButton.setOnAction(event -> confirmDeleteGroup(getTableView().getItems().get(getIndex())));
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : box);
+            }
+        });
     }
 
     private void setupUserGroupTable() {
@@ -403,7 +416,7 @@ public class PermissionController {
                 return;
             }
             try {
-                permissionService.updateUserAndGroup(assignment.getUserId(), txtUsername.getText(), txtRole.getText(),
+                permissionService.updateUserAndGroup(assignment.getUserId(), txtUsername.getText(), txtRole.getText().toUpperCase(),
                         selectedGroup.getId());
                 loadUserAssignments();
                 dialog.close();
@@ -483,7 +496,7 @@ public class PermissionController {
             }
 
             try {
-                permissionService.insertUserAndGroup(username, password, selectedGroup.getTenNhom(),
+                permissionService.insertUserAndGroup(username, password, selectedGroup.getTenNhom().toUpperCase(),
                         selectedGroup.getId());
                 loadUserAssignments();
                 dialog.close();

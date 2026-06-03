@@ -61,6 +61,8 @@ public class PhanAnhController {
     @FXML
     private TableColumn<PhanAnh, String> colCitizenStatus;
     @FXML
+    private TableColumn<PhanAnh, String> colCitizenAssignee;
+    @FXML
     private TableColumn<PhanAnh, Void> colCitizenActions;
 
     @FXML
@@ -80,6 +82,13 @@ public class PhanAnhController {
     @FXML
     private TableColumn<PhanAnh, Void> colAdminActions;
 
+    @FXML
+    private javafx.scene.control.TabPane tabPane;
+    @FXML
+    private javafx.scene.control.Tab tabCitizen;
+    @FXML
+    private javafx.scene.control.Tab tabAdmin;
+
     private final PhanAnhService phanAnhService = new PhanAnhService();
 
     @FXML
@@ -93,6 +102,7 @@ public class PhanAnhController {
         colCitizenCategory.setCellValueFactory(new PropertyValueFactory<>("linhVuc"));
         colCitizenDate.setCellValueFactory(new PropertyValueFactory<>("ngayGui"));
         colCitizenStatus.setCellValueFactory(new PropertyValueFactory<>("trangThai"));
+        colCitizenAssignee.setCellValueFactory(new PropertyValueFactory<>("nguoiPhuTrach"));
         colCitizenActions.setCellFactory(col -> createCitizenActionCell());
 
         colAdminStt.setCellValueFactory(
@@ -106,6 +116,32 @@ public class PhanAnhController {
 
         tableCitizenReports.setItems(FXCollections.observableArrayList());
         tableAdminReports.setItems(FXCollections.observableArrayList());
+
+        tableCitizenReports.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tableAdminReports.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        User currentUser = SessionManager.getInstance().getCurrentUser();
+        boolean hasCitizen = false;
+        boolean hasAdmin = false;
+
+        if (currentUser != null) {
+            if ("ADMIN".equalsIgnoreCase(currentUser.getRole())) {
+                hasCitizen = true;
+                hasAdmin = true;
+            } else {
+                com.bluemoon.services.PermissionService permService = new com.bluemoon.services.PermissionService();
+                java.util.Set<String> perms = permService.getPermissionCodesByUser(currentUser.getId());
+                if (perms.contains("PHAN_ANH_GUI")) hasCitizen = true;
+                if (perms.contains("PHAN_ANH_TIEP_NHAN")) hasAdmin = true;
+            }
+        }
+
+        if (!hasCitizen) {
+            tabPane.getTabs().remove(tabCitizen);
+        }
+        if (!hasAdmin) {
+            tabPane.getTabs().remove(tabAdmin);
+        }
 
         refreshTables();
     }
@@ -381,6 +417,33 @@ public class PhanAnhController {
             report.setPhanHoi(feedback);
             report.setTrangThai("Đã tiếp nhận");
             phanAnhService.updateReport(report);
+
+            try {
+                com.bluemoon.services.ThongBaoService thongBaoService = new com.bluemoon.services.ThongBaoService();
+                com.bluemoon.models.ThongBao tb = new com.bluemoon.models.ThongBao();
+                tb.setTenThongBao("Phản ánh '" + report.getTieuDe() + "' đã được tiếp nhận bởi " + assignee);
+                tb.setNgayBanHanh(LocalDate.now());
+                tb.setTrangThai("Đã phát hành");
+                
+                com.bluemoon.services.PermissionService permService = new com.bluemoon.services.PermissionService();
+                
+                java.util.List<Integer> targetGroupIds = new java.util.ArrayList<>();
+                for (com.bluemoon.models.UserGroupAssignment assignment : permService.findUserAssignments(report.getNguoiGui())) {
+                    if (assignment.getUsername().equals(report.getNguoiGui()) && assignment.getGroupId() > 0) {
+                        targetGroupIds.add(assignment.getGroupId());
+                    }
+                }
+                
+                // Nếu người gửi chưa được gán vào nhóm nào thì gửi cho tất cả
+                if (targetGroupIds.isEmpty()) {
+                    targetGroupIds = permService.findGroups(null).stream().map(g -> g.getId()).collect(java.util.stream.Collectors.toList());
+                }
+                
+                thongBaoService.addNotification(tb, targetGroupIds);
+            } catch (Exception e) {
+                System.err.println("Lỗi gửi thông báo: " + e.getMessage());
+            }
+
             refreshTables();
             showAlert(Alert.AlertType.INFORMATION, "Phản ánh đã được cập nhật và chuyển trạng thái.");
         }
