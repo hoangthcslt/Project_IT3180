@@ -116,3 +116,29 @@ CALL AddForeignKeyIfNotExist('bluemoon_db', 'nop_tien', 'fk_nop_tien_hoa_don', '
 
 DROP PROCEDURE IF EXISTS AddColumnIfNotExist;
 DROP PROCEDURE IF EXISTS AddForeignKeyIfNotExist;
+
+-- 8. Tạo các bảng phục vụ chức năng thông báo (Tiện ích)
+CREATE TABLE IF NOT EXISTS `thong_bao` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `ten_thong_bao` VARCHAR(255) NOT NULL,
+  `file_path` VARCHAR(255) DEFAULT NULL,
+  `ngay_ban_hanh` DATE NOT NULL,
+  `trang_thai` VARCHAR(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE IF NOT EXISTS `thong_bao_group` (
+  `thong_bao_id` INT NOT NULL,
+  `group_id` INT NOT NULL,
+  PRIMARY KEY (`thong_bao_id`, `group_id`),
+  FOREIGN KEY (`thong_bao_id`) REFERENCES `thong_bao`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`group_id`) REFERENCES `user_group`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE IF NOT EXISTS `user_read_notification` (
+  `user_id` INT NOT NULL,
+  `thong_bao_id` INT NOT NULL,
+  PRIMARY KEY (`user_id`, `thong_bao_id`),
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`thong_bao_id`) REFERENCES `thong_bao`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+

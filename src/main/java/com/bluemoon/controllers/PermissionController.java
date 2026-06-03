@@ -126,11 +126,12 @@ public class PermissionController {
                 List<User> users = permissionService.findAllUsers();
                 int rowNum = 1;
                 for (User user : users) {
+                    Row row = sheet.createRow(rowNum++);
+                    row.createCell(0).setCellValue(user.getUsername());
                     String pass = user.getPassword();
-                    // Chỉ xuất những account chưa bị mã hoá
-                    if (pass != null && !pass.startsWith("$2a$")) {
-                        Row row = sheet.createRow(rowNum++);
-                        row.createCell(0).setCellValue(user.getUsername());
+                    if (pass != null && pass.startsWith("$2a$")) {
+                        row.createCell(1).setCellValue("[ENCRYPTED]");
+                    } else {
                         row.createCell(1).setCellValue(pass);
                     }
                 }

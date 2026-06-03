@@ -45,7 +45,7 @@
                   <Font name="System Bold" size="32.0" />
                </font>
             </Label>
-            <Label text="Hệ thống quản lý chung cư" textFill="#e0e0e0">
+            <Label text="Hệ thống quản lý chung cư" textFill="#93c5fd">
                <font>
                   <Font size="16.0" />
                </font>
@@ -57,7 +57,7 @@
             <!-- Khung Glassmorphism -->
             <VBox prefWidth="450.0" spacing="15.0" styleClass="glass-container">
                <children>
-                  <Label text="Đăng nhập" textFill="WHITE">
+                  <Label text="Đăng nhập" textFill="#0f172a">
                      <font>
                         <Font name="System Bold" size="24.0" />
                      </font>
@@ -67,7 +67,7 @@
                   </Label>
 
                   <!-- Ô nhập Tên đăng nhập -->
-                  <Label text="Tên đăng nhập" textFill="#e0e0e0" />
+                  <Label text="Tên đăng nhập" />
                   <HBox alignment="CENTER_LEFT" styleClass="input-container">
                      <children>
                         <!-- Tạm ẩn icon vì chưa có file user_icon.png
@@ -89,7 +89,7 @@
                   </HBox>
 
                   <!-- Ô nhập Mật khẩu -->
-                  <Label text="Mật khẩu" textFill="#e0e0e0">
+                  <Label text="Mật khẩu">
                      <VBox.margin>
                         <Insets top="5.0" />
                      </VBox.margin>

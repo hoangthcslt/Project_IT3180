@@ -167,6 +167,12 @@ public class HouseholdRepository {
             if (!hasColumn(conn, "phuong_tien")) {
                 execute(conn, "ALTER TABLE ho_khau ADD COLUMN phuong_tien VARCHAR(255) NOT NULL DEFAULT 'Chưa cập nhật' AFTER so_nguoi");
             }
+            if (!hasColumn(conn, "so_xe_may")) {
+                execute(conn, "ALTER TABLE ho_khau ADD COLUMN so_xe_may INT NOT NULL DEFAULT 0 AFTER ngay_lap");
+            }
+            if (!hasColumn(conn, "so_oto")) {
+                execute(conn, "ALTER TABLE ho_khau ADD COLUMN so_oto INT NOT NULL DEFAULT 0 AFTER so_xe_may");
+            }
             if (addedPeopleColumn) {
                 execute(conn, "UPDATE ho_khau hk LEFT JOIN (SELECT ho_khau_id, COUNT(*) AS total FROM nhan_khau GROUP BY ho_khau_id) nk ON nk.ho_khau_id = hk.id SET hk.so_nguoi = COALESCE(nk.total, 0)");
             }
