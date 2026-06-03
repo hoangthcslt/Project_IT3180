@@ -1,27 +1,32 @@
-/* Hiệu ứng khung kính (Glassmorphism) */
+/* Hiệu ứng khung kính sáng màu (Glassmorphism) */
 .glass-container {
-    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-background-color: rgba(255, 255, 255, 0.78);
     -fx-background-radius: 20;
-    -fx-border-color: rgba(255, 255, 255, 0.2);
+    -fx-border-color: rgba(255, 255, 255, 0.4);
     -fx-border-radius: 20;
     -fx-border-width: 1.5;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.25), 20, 0, 0, 10);
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.15), 25, 0, 0, 10);
 }
 
-/* Khung chứa Icon và TextField */
+/* Các nhãn chữ bên trong container kính mờ */
+.glass-container .label {
+    -fx-text-fill: #1e293b;
+}
+
+/* Khung chứa Icon và TextField màu sáng */
 .input-container {
-    -fx-background-color: rgba(0, 0, 0, 0.2);
+    -fx-background-color: rgba(248, 250, 252, 0.95);
     -fx-background-radius: 8;
-    -fx-border-color: rgba(255, 255, 255, 0.15);
+    -fx-border-color: #cbd5e1;
     -fx-border-radius: 8;
     -fx-pref-height: 45;
 }
 
-/* Ẩn viền và nền mặc định của TextField/PasswordField */
+/* Chữ hiển thị màu đen đậm và placeholder xám trung tính */
 .custom-text-field {
     -fx-background-color: transparent;
-    -fx-text-fill: white;
-    -fx-prompt-text-fill: #888888;
+    -fx-text-fill: #0f172a;
+    -fx-prompt-text-fill: #94a3b8;
     -fx-font-size: 14px;
     -fx-padding: 0 10 0 0;
 }

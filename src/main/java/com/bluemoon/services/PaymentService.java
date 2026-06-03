@@ -45,4 +45,12 @@ public class PaymentService {
     public List<PaymentStatusView> findUnpaidItems(String keyword) {
         return repository.findUnpaidItems(keyword);
     }
+
+    public List<java.util.Map<String, Object>> findGiaoDichHistory(String keyword) {
+        return repository.findGiaoDichHistory(keyword);
+    }
+
+    public boolean thucHienThanhToanHoaDon(int hoaDonId, BigDecimal soTien, String hinhThuc, String nguoiNop) throws java.sql.SQLException {
+        return repository.thucHienThanhToanHoaDon(hoaDonId, soTien, hinhThuc, nguoiNop);
+    }
 }
