@@ -69,7 +69,7 @@ public class PhanAnhService {
     }
 
     public List<String> getAvailableCategories() {
-        return Collections.unmodifiableList(Arrays.asList("Đang cập nhật"));
+        return Collections.unmodifiableList(Arrays.asList("Quản lí", "Môi trường", "An ninh", "Kinh tế", "Dịch vụ", "Cơ sở vật chất", "Kiến nghị riêng"));
     }
 
     public List<String> getAvailableAssignees() {
