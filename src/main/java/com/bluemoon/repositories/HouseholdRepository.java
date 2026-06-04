@@ -75,13 +75,43 @@ public class HouseholdRepository {
     }
 
     public boolean delete(int id) {
-        try (Connection conn = DBConnection.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement("DELETE FROM ho_khau WHERE id = ?")) {
-            pstmt.setInt(1, id);
-            return pstmt.executeUpdate() > 0;
+        ensureExtendedSchema();
+        String deletePaymentsSql = "DELETE FROM nop_tien WHERE ho_khau_id = ?";
+        String deleteHouseholdSql = "DELETE FROM ho_khau WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                System.out.println("Deleting ho_khau id: " + id);
+                printHouseholdById(conn, id);
+                printReferenceCount(conn, "nhan_khau", "ho_khau_id", id);
+                printReferenceCount(conn, "nop_tien", "ho_khau_id", id);
+                printReferenceCount(conn, "hoa_don", "ho_khau_id", id);
+
+                int paymentRows;
+                try (PreparedStatement pstmt = conn.prepareStatement(deletePaymentsSql)) {
+                    pstmt.setInt(1, id);
+                    paymentRows = pstmt.executeUpdate();
+                }
+                System.out.println("nop_tien rows deleted: " + paymentRows);
+
+                int rows;
+                try (PreparedStatement pstmt = conn.prepareStatement(deleteHouseholdSql)) {
+                    pstmt.setInt(1, id);
+                    rows = pstmt.executeUpdate();
+                }
+                System.out.println("Rows affected: " + rows);
+
+                conn.commit();
+                return rows > 0;
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
+            throw new IllegalStateException("Khong the xoa ho khau id=" + id + ": " + e.getMessage(), e);
         }
     }
 
@@ -192,6 +222,33 @@ public class HouseholdRepository {
     private void execute(Connection conn, String sql) throws SQLException {
         try (Statement statement = conn.createStatement()) {
             statement.executeUpdate(sql);
+        }
+    }
+
+    private void printHouseholdById(Connection conn, int id) throws SQLException {
+        String sql = "SELECT * FROM ho_khau WHERE id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    System.out.println("Found ho_khau: id=" + rs.getInt("id")
+                            + ", ma_ho_khau=" + rs.getString("ma_ho_khau"));
+                } else {
+                    System.out.println("Found ho_khau: no row for id=" + id);
+                }
+            }
+        }
+    }
+
+    private void printReferenceCount(Connection conn, String tableName, String columnName, int id) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM " + tableName + " WHERE " + columnName + " = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    System.out.println(tableName + " references for ho_khau id=" + id + ": " + rs.getInt(1));
+                }
+            }
         }
     }
 }
