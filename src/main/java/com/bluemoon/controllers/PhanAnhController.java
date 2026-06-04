@@ -273,7 +273,7 @@ public class PhanAnhController {
         Label lblCategory = new Label("Lĩnh vực phản ánh:");
         ComboBox<String> cbCategory = new ComboBox<>(
                 FXCollections.observableArrayList(phanAnhService.getAvailableCategories()));
-        cbCategory.setValue("Đang cập nhật");
+        cbCategory.getSelectionModel().selectFirst();
         cbCategory.setMaxWidth(Double.MAX_VALUE);
 
         Label lblTitle = new Label("Tiêu đề phản ánh:");
