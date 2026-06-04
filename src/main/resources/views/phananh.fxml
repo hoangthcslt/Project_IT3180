@@ -18,9 +18,9 @@
 
     <Label text="PHẢN ÁNH" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #0f172a;" />
 
-    <TabPane tabClosingPolicy="UNAVAILABLE" style="-fx-background-color: transparent;">
+    <TabPane fx:id="tabPane" tabClosingPolicy="UNAVAILABLE" style="-fx-background-color: transparent;">
         <tabs>
-            <Tab text="Phản ánh của cư dân">
+            <Tab fx:id="tabCitizen" text="Phản ánh của cư dân">
                 <VBox spacing="12.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 2);">
                     <padding>
                         <Insets top="15.0" right="20.0" bottom="15.0" left="20.0" />
@@ -39,12 +39,13 @@
                             <TableColumn fx:id="colCitizenCategory" prefWidth="160.0" text="Lĩnh vực" />
                             <TableColumn fx:id="colCitizenDate" prefWidth="140.0" style="-fx-alignment: CENTER;" text="Ngày gửi" />
                             <TableColumn fx:id="colCitizenStatus" prefWidth="130.0" style="-fx-alignment: CENTER;" text="Trạng thái" />
+                            <TableColumn fx:id="colCitizenAssignee" prefWidth="140.0" style="-fx-alignment: CENTER;" text="Người tiếp nhận" />
                             <TableColumn fx:id="colCitizenActions" prefWidth="150.0" style="-fx-alignment: CENTER;" text="Thao tác" />
                         </columns>
                     </TableView>
                 </VBox>
             </Tab>
-            <Tab text="Tiếp nhận phản ánh">
+            <Tab fx:id="tabAdmin" text="Tiếp nhận phản ánh">
                 <VBox spacing="12.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 2);">
                     <padding>
                         <Insets top="15.0" right="20.0" bottom="15.0" left="20.0" />

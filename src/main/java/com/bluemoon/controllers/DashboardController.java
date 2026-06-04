@@ -450,6 +450,10 @@ public class DashboardController {
             button.setVisible(allowed);
             button.setManaged(allowed);
         });
+
+        boolean canPhanAnh = permissions.contains("PHAN_ANH_GUI") || permissions.contains("PHAN_ANH_TIEP_NHAN");
+        btnPhanAnh.setVisible(canPhanAnh);
+        btnPhanAnh.setManaged(canPhanAnh);
     }
 
     private void showAllPermissionButtons() {
@@ -469,6 +473,8 @@ public class DashboardController {
         btnPhanQuyen.setManaged(true);
         btnTienIch.setVisible(true);
         btnTienIch.setManaged(true);
+        btnPhanAnh.setVisible(true);
+        btnPhanAnh.setManaged(true);
     }
 
     @FXML
