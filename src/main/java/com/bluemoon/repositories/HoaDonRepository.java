@@ -141,8 +141,11 @@ public class HoaDonRepository {
                     psInv.setBigDecimal(4, BigDecimal.ZERO);
                     psInv.setBigDecimal(5, BigDecimal.ZERO);
                     psInv.setString(6, "CHUA_NOP");
-                    psInv.setDate(7, Date.valueOf(ngayTao));
-                    psInv.setDate(8, Date.valueOf(hanNop));
+                    LocalDate safeNgayTao = ngayTao != null ? ngayTao : LocalDate.now();
+                    LocalDate safeHanNop = hanNop != null ? hanNop : safeNgayTao.plusDays(15);
+                    
+                    psInv.setDate(7, Date.valueOf(safeNgayTao));
+                    psInv.setDate(8, Date.valueOf(safeHanNop));
                     psInv.executeUpdate();
 
                     int hoaDonId = 0;

@@ -21,13 +21,11 @@ public class ThongKeController {
 
     // Charts Bindings
     @FXML private PieChart chartGioiTinh;
-    @FXML private BarChart<String, Number> chartTrangThai;
+    @FXML private PieChart chartTyLeCanHo;
+    @FXML private LineChart<String, Number> chartDanCuTheoThoiGian;
+    @FXML private BarChart<String, Number> chartDoanhThuTheoThang;
+    @FXML private BarChart<String, Number> chartNoTheoThang;
     @FXML private StackedBarChart<String, Number> chartNoVaThu;
-    @FXML private AreaChart<String, Number> chartDoanhThu;
-
-    // Filter Bindings
-    @FXML private ComboBox<String> comboKieuThoiGian;
-    @FXML private ComboBox<String> comboNamLoc;
 
     private ThongKeRepository thongKeRepository = new ThongKeRepository();
     private ExcelExporter excelExporter = new ExcelExporter();
@@ -36,8 +34,10 @@ public class ThongKeController {
     public void initialize() {
         loadKPIData();
         loadDemographicsData();
+        loadApartmentData();
+        loadPopulationTrend();
         loadFeeDebtData();
-        initializeTimeFilters();
+        loadMonthlyFinancialCharts();
     }
 
     private void loadKPIData() {
@@ -70,22 +70,48 @@ public class ThongKeController {
                 if (count == null) count = 0;
                 chartGioiTinh.getData().add(new PieChart.Data(mapGender(rawGen) + " (" + count + ")", count.doubleValue()));
             }
-
-            // Residency Status Stats (BarChart)
-            List<Map<String, Object>> statusList = thongKeRepository.layThongKeTrangThai();
-            XYChart.Series<String, Number> series = new XYChart.Series<>();
-            series.setName("Số lượng");
-            for (Map<String, Object> row : statusList) {
-                String rawStatus = (String) row.get("trangThai");
-                Integer count = (Integer) row.get("count");
-                if (count == null) count = 0;
-                series.getData().add(new XYChart.Data<>(mapStatus(rawStatus), count));
-            }
-            chartTrangThai.getData().clear();
-            chartTrangThai.getData().add(series);
-
         } catch (SQLException e) {
             showAlert(Alert.AlertType.ERROR, "Lỗi cơ sở dữ liệu", "Không thể tải thông tin dân cư: " + e.getMessage());
+        }
+    }
+
+    private void loadApartmentData() {
+        try {
+            List<Map<String, Object>> list = thongKeRepository.layThongKeTyLeCanHo();
+            chartTyLeCanHo.getData().clear();
+            for (Map<String, Object> row : list) {
+                String status = (String) row.get("status");
+                Integer count = (Integer) row.get("count");
+                if (count == null) count = 0;
+                if (status == null) status = "Trống";
+                chartTyLeCanHo.getData().add(new PieChart.Data(status + " (" + count + ")", count.doubleValue()));
+            }
+        } catch (SQLException e) {
+            showAlert(Alert.AlertType.ERROR, "Lỗi cơ sở dữ liệu", "Không thể tải thông tin trạng thái căn hộ: " + e.getMessage());
+        }
+    }
+
+    private void loadPopulationTrend() {
+        try {
+            List<Map<String, Object>> list = thongKeRepository.layDanCuTheoThoiGian();
+            chartDanCuTheoThoiGian.getData().clear();
+            
+            XYChart.Series<String, Number> series = new XYChart.Series<>();
+            series.setName("Dân cư lũy tiến");
+
+            int runningSum = 0;
+            for (Map<String, Object> row : list) {
+                java.time.LocalDate ngayLap = (java.time.LocalDate) row.get("ngayLap");
+                Integer count = (Integer) row.get("count");
+                if (count == null) count = 0;
+                runningSum += count;
+                
+                String dateStr = ngayLap != null ? ngayLap.toString() : "N/A";
+                series.getData().add(new XYChart.Data<>(dateStr, runningSum));
+            }
+            chartDanCuTheoThoiGian.getData().add(series);
+        } catch (SQLException e) {
+            showAlert(Alert.AlertType.ERROR, "Lỗi cơ sở dữ liệu", "Không thể tải xu hướng dân cư: " + e.getMessage());
         }
     }
 
@@ -119,61 +145,35 @@ public class ThongKeController {
         }
     }
 
-    private void initializeTimeFilters() {
-        // Setup options
-        comboKieuThoiGian.getItems().addAll("Theo năm", "Theo tháng", "Theo tuần");
-        comboKieuThoiGian.setValue("Theo tháng"); // Default
-
-        comboNamLoc.getItems().add("Tất cả");
+    private void loadMonthlyFinancialCharts() {
         try {
-            List<Integer> years = thongKeRepository.layDanhSachNamCoGiaoDich();
-            for (Integer yr : years) {
-                comboNamLoc.getItems().add(String.valueOf(yr));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        comboNamLoc.setValue("Tất cả"); // Default
-
-        // Set listeners
-        comboKieuThoiGian.valueProperty().addListener((obs, oldVal, newVal) -> updateChartDoanhThu());
-        comboNamLoc.valueProperty().addListener((obs, oldVal, newVal) -> updateChartDoanhThu());
-
-        // Draw initial chart
-        updateChartDoanhThu();
-    }
-
-    private void updateChartDoanhThu() {
-        try {
-            String kieu = "MONTH";
-            String kieuSel = comboKieuThoiGian.getValue();
-            if ("Theo năm".equals(kieuSel)) kieu = "YEAR";
-            else if ("Theo tháng".equals(kieuSel)) kieu = "MONTH";
-            else if ("Theo tuần".equals(kieuSel)) kieu = "WEEK";
-
-            Integer nam = null;
-            String namSel = comboNamLoc.getValue();
-            if (namSel != null && !namSel.equals("Tất cả")) {
-                nam = Integer.parseInt(namSel);
-            }
-
-            List<Map<String, Object>> revenueList = thongKeRepository.layDoanhThuTheoThoiGian(kieu, nam);
-            
-            XYChart.Series<String, Number> series = new XYChart.Series<>();
-            series.setName("Doanh thu");
-
+            // Doanh thu theo tháng
+            List<Map<String, Object>> revenueList = thongKeRepository.layDoanhThuTheoThang();
+            chartDoanhThuTheoThang.getData().clear();
+            XYChart.Series<String, Number> revSeries = new XYChart.Series<>();
+            revSeries.setName("Doanh thu");
             for (Map<String, Object> row : revenueList) {
                 String label = (String) row.get("label");
                 BigDecimal val = (BigDecimal) row.get("val");
                 if (val == null) val = BigDecimal.ZERO;
-                series.getData().add(new XYChart.Data<>(label, val));
+                revSeries.getData().add(new XYChart.Data<>(label, val));
             }
+            chartDoanhThuTheoThang.getData().add(revSeries);
 
-            chartDoanhThu.getData().clear();
-            chartDoanhThu.getData().add(series);
-
+            // Nợ theo tháng
+            List<Map<String, Object>> debtList = thongKeRepository.layNoTheoThang();
+            chartNoTheoThang.getData().clear();
+            XYChart.Series<String, Number> debtSeries = new XYChart.Series<>();
+            debtSeries.setName("Tiền nợ");
+            for (Map<String, Object> row : debtList) {
+                String label = (String) row.get("label");
+                BigDecimal val = (BigDecimal) row.get("val");
+                if (val == null) val = BigDecimal.ZERO;
+                debtSeries.getData().add(new XYChart.Data<>(label, val));
+            }
+            chartNoTheoThang.getData().add(debtSeries);
         } catch (SQLException e) {
-            showAlert(Alert.AlertType.ERROR, "Lỗi cơ sở dữ liệu", "Không thể cập nhật biểu đồ doanh thu: " + e.getMessage());
+            showAlert(Alert.AlertType.ERROR, "Lỗi cơ sở dữ liệu", "Không thể tải biểu đồ tài chính: " + e.getMessage());
         }
     }
 
@@ -184,19 +184,7 @@ public class ThongKeController {
             List<Map<String, Object>> genderData = thongKeRepository.layThongKeGioiTinh();
             List<Map<String, Object>> statusData = thongKeRepository.layThongKeTrangThai();
             List<Map<String, Object>> feeData = thongKeRepository.layThongKeNoVaThu();
-            
-            String kieu = "MONTH";
-            String kieuSel = comboKieuThoiGian.getValue();
-            if ("Theo năm".equals(kieuSel)) kieu = "YEAR";
-            else if ("Theo tháng".equals(kieuSel)) kieu = "MONTH";
-            else if ("Theo tuần".equals(kieuSel)) kieu = "WEEK";
-
-            Integer nam = null;
-            String namSel = comboNamLoc.getValue();
-            if (namSel != null && !namSel.equals("Tất cả")) {
-                nam = Integer.parseInt(namSel);
-            }
-            List<Map<String, Object>> revenueData = thongKeRepository.layDoanhThuTheoThoiGian(kieu, nam);
+            List<Map<String, Object>> revenueData = thongKeRepository.layDoanhThuTheoThoiGian("MONTH", null);
 
             boolean success = excelExporter.exportThongKeToExcel(
                     kpiData,
@@ -228,16 +216,6 @@ public class ThongKeController {
             case "NAM": return "Nam";
             case "NU": return "Nữ";
             default: return "Khác";
-        }
-    }
-
-    private String mapStatus(String dbStatus) {
-        if (dbStatus == null) return "Thường trú";
-        switch (dbStatus.toUpperCase()) {
-            case "THUONG_TRU": return "Thường trú";
-            case "TAM_TRU": return "Tạm trú";
-            case "TAM_VANG": return "Tạm vắng";
-            default: return dbStatus;
         }
     }
 

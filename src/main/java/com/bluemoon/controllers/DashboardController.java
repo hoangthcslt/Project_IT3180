@@ -181,21 +181,14 @@ public class DashboardController {
         lblUnpaidTotal = createSmallMetricLabel();
 
         cards.getChildren().addAll(
-                createDashboardCard("Hộ khẩu", lblHouseholdTotal, null, "⌂", "#2f80ed", this::showHouseholdListView),
-                createDashboardCard("Nhân khẩu", lblResidentTotal, null, "●", "#27ae60", this::showResidentListView),
-                createDashboardCard("Khoản thu", lblFeeTotal, null, "$", "#f2994a", this::showFeeListView),
-                createDashboardCard("Hóa đơn", lblPaidTotal, lblUnpaidTotal, "▣", "#9b51e0",
-                        this::showPaymentStatusView));
+                createDashboardCard("Hộ khẩu", lblHouseholdTotal, null, "🏠", "#2f80ed", this::showHouseholdListView),
+                createDashboardCard("Nhân khẩu", lblResidentTotal, null, "👥", "#27ae60", this::showResidentListView),
+                createDashboardCard("Khoản thu", lblFeeTotal, null, "💰", "#f2994a", this::showFeeListView),
+                createDashboardCard("Nộp tiền", lblPaidTotal, lblUnpaidTotal, "💵", "#9b51e0",
+                        this::showPaymentStatusView),
+                createDashboardCard("Thống kê", null, null, "📊", "#eb5757", () -> loadView("thongke.fxml")));
 
-        FlowPane statsRow = new FlowPane();
-        statsRow.setHgap(18);
-        statsRow.setVgap(18);
-        statsRow.setPrefWrapLength(900);
-        statsRow.setAlignment(Pos.TOP_LEFT);
-        statsRow.getChildren().add(
-                createDashboardCard("Thống kê", null, null, "▥", "#eb5757", () -> loadView("thongke.fxml")));
-
-        VBox centerContent = new VBox(28, cards, statsRow);
+        VBox centerContent = new VBox(28, cards);
         centerContent.setAlignment(Pos.TOP_LEFT);
         wrapper.setCenter(centerContent);
         return wrapper;
