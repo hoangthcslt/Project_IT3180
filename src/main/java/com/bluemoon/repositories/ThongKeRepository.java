@@ -227,15 +227,11 @@ public class ThongKeRepository {
     public List<Map<String, Object>> layNoTheoThang() throws SQLException {
         List<Map<String, Object>> result = new ArrayList<>();
         String sql = "SELECT " +
-                     "  DATE_FORMAT(kt.ngay_tao, '%Y-%m') AS label, " +
-                     "  SUM(GREATEST(hk.dien_tich * kt.don_gia - COALESCE(paid_sub.tong_nop, 0), 0)) AS val " +
-                     "FROM khoan_thu kt " +
-                     "CROSS JOIN ho_khau hk " +
-                     "LEFT JOIN (" +
-                     "  SELECT ho_khau_id, khoan_thu_id, SUM(so_tien_nop) AS tong_nop " +
-                     "  FROM nop_tien " +
-                     "  GROUP BY ho_khau_id, khoan_thu_id" +
-                     ") paid_sub ON paid_sub.ho_khau_id = hk.id AND paid_sub.khoan_thu_id = kt.id " +
+                     "  DATE_FORMAT(hd.ngay_tao, '%Y-%m') AS label, " +
+                     "  SUM(hd.tong_tien - hd.so_tien_da_nop) AS val " +
+                     "FROM hoa_don hd " +
+                     "JOIN khoan_thu kt ON hd.khoan_thu_id = kt.id " +
+                     "WHERE kt.trang_thai = 'PUBLISHED' AND kt.loai_phi = 'BAT_BUOC' " +
                      "GROUP BY label " +
                      "ORDER BY label ASC";
         try (Connection conn = DBConnection.getConnection();
