@@ -429,6 +429,10 @@ public class DashboardController {
 
     @FXML
     void handleTienIch(ActionEvent event) {
+        if (!canAccessPermission("TIEN_ICH")) {
+            showNoPermissionAlert();
+            return;
+        }
         loadView("thongbao.fxml");
     }
 
@@ -438,6 +442,10 @@ public class DashboardController {
             return;
         }
         if (!permissionService.hasUserGroup(user.getId())) {
+            btnTienIch.setVisible(false);
+            btnTienIch.setManaged(false);
+            menuNotifications.setVisible(false);
+            menuNotifications.setManaged(false);
             return;
         }
 
@@ -449,7 +457,8 @@ public class DashboardController {
                 "KHOAN_THU", btnKhoanThu,
                 "NOP_TIEN", btnNopTien,
                 "THONG_KE", btnThongKe,
-                "PHAN_QUYEN", btnPhanQuyen, "TIEN_ICH", btnTienIch);
+                "PHAN_QUYEN", btnPhanQuyen,
+                "TIEN_ICH", btnTienIch);
 
         permissionButtons.forEach((code, button) -> {
             boolean allowed = permissions.contains(code);
@@ -460,6 +469,10 @@ public class DashboardController {
         boolean canPhanAnh = permissions.contains("PHAN_ANH_GUI") || permissions.contains("PHAN_ANH_TIEP_NHAN");
         btnPhanAnh.setVisible(canPhanAnh);
         btnPhanAnh.setManaged(canPhanAnh);
+
+        boolean canThongBao = permissions.contains("TIEN_ICH");
+        menuNotifications.setVisible(canThongBao);
+        menuNotifications.setManaged(canThongBao);
     }
 
     private void showAllPermissionButtons() {
@@ -479,8 +492,29 @@ public class DashboardController {
         btnPhanQuyen.setManaged(true);
         btnTienIch.setVisible(true);
         btnTienIch.setManaged(true);
+        menuNotifications.setVisible(true);
+        menuNotifications.setManaged(true);
         btnPhanAnh.setVisible(true);
         btnPhanAnh.setManaged(true);
+    }
+
+    private boolean canAccessPermission(String permissionCode) {
+        User currentUser = SessionManager.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            return false;
+        }
+        if ("ADMIN".equalsIgnoreCase(currentUser.getRole())) {
+            return true;
+        }
+        return permissionService.getPermissionCodesByUser(currentUser.getId()).contains(permissionCode);
+    }
+
+    private void showNoPermissionAlert() {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Khong co quyen");
+        alert.setHeaderText(null);
+        alert.setContentText("Ban khong co quyen truy cap chuc nang nay.");
+        alert.showAndWait();
     }
 
     @FXML

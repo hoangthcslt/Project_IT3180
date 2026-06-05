@@ -21,7 +21,7 @@ public class PermissionRepository {
             new Permission("NOP_TIEN", "Nộp tiền"),
             new Permission("THONG_KE", "Thống kê"),
             new Permission("PHAN_QUYEN", "Phân quyền"),
-            new Permission("TIEN_ICH", "Tiện ích"),
+            new Permission("TIEN_ICH", "Th\u00f4ng b\u00e1o"),
             new Permission("PHAN_ANH_GUI", "Gửi phản ánh"),
             new Permission("PHAN_ANH_TIEP_NHAN", "Tiếp nhận phản ánh")
     };
@@ -372,7 +372,8 @@ public class PermissionRepository {
     }
 
     private void seedPermissions() {
-        String sql = "INSERT IGNORE INTO permissions (code, name) VALUES (?, ?)";
+        String sql = "INSERT INTO permissions (code, name) VALUES (?, ?) "
+                + "ON DUPLICATE KEY UPDATE name = VALUES(name)";
         try (Connection conn = DBConnection.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
             for (Permission permission : SYSTEM_PERMISSIONS) {
@@ -422,3 +423,4 @@ public class PermissionRepository {
         }
     }
 }
+

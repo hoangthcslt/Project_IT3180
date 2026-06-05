@@ -18,12 +18,15 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -178,10 +181,12 @@ public class PhanAnhController {
 
     private TableCell<PhanAnh, Void> createCitizenActionCell() {
         return new TableCell<>() {
-            private final Button editButton = createActionButton("Sửa", "#2563eb");
-            private final Button deleteButton = createActionButton("Xóa", "#ef4444");
+            private final Button detailButton = createActionButton("Chi ti\u1ebft", "#475569");
+            private final Button editButton = createActionButton("S\u1eeda", "#2563eb");
+            private final Button deleteButton = createActionButton("X\u00f3a", "#ef4444");
 
             {
+                detailButton.setOnAction(event -> showReportDetailDialog(getCurrentReport(), false));
                 editButton.setOnAction(event -> showEditCitizenDialog(getCurrentReport()));
                 deleteButton.setOnAction(event -> confirmDelete(getCurrentReport()));
             }
@@ -196,7 +201,7 @@ public class PhanAnhController {
                 if (empty) {
                     setGraphic(null);
                 } else {
-                    HBox box = new HBox(8, editButton, deleteButton);
+                    HBox box = new HBox(8, detailButton, editButton, deleteButton);
                     box.setAlignment(Pos.CENTER);
                     setGraphic(box);
                 }
@@ -206,9 +211,11 @@ public class PhanAnhController {
 
     private TableCell<PhanAnh, Void> createAdminActionCell() {
         return new TableCell<>() {
+            private final Button detailButton = createActionButton("Chi ti\u1ebft", "#475569");
             private final Button editButton = createActionButton("Edit", "#10b981");
 
             {
+                detailButton.setOnAction(event -> showReportDetailDialog(getCurrentReport(), true));
                 editButton.setOnAction(event -> showAdminAssignDialog(getCurrentReport()));
             }
 
@@ -222,7 +229,7 @@ public class PhanAnhController {
                 if (empty) {
                     setGraphic(null);
                 } else {
-                    HBox box = new HBox(editButton);
+                    HBox box = new HBox(8, detailButton, editButton);
                     box.setAlignment(Pos.CENTER);
                     setGraphic(box);
                 }
@@ -232,9 +239,97 @@ public class PhanAnhController {
 
     private Button createActionButton(String text, String color) {
         Button button = new Button(text);
+        button.setMinWidth(74);
         button.setStyle("-fx-background-color: " + color
                 + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand; -fx-padding: 6 14;");
         return button;
+    }
+
+    private void showReportDetailDialog(PhanAnh report, boolean adminView) {
+        if (report == null) {
+            return;
+        }
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Chi tiet phan anh");
+        dialog.setResizable(true);
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+
+        VBox content = new VBox(12);
+        content.setPadding(new Insets(16));
+        content.setPrefWidth(620);
+
+        content.getChildren().add(readOnlyRow("Hinh anh dinh kem", imageSummary(report.getHinhAnh())));
+        content.getChildren().add(readOnlyRow("Linh vuc phan anh", report.getLinhVuc()));
+        content.getChildren().add(readOnlyRow("Tieu de phan anh", report.getTieuDe()));
+        content.getChildren().add(readOnlyArea("Noi dung phan anh", report.getNoiDung()));
+        content.getChildren().add(readOnlyRow("Ngay gui", valueOf(report.getNgayGui())));
+        if (adminView) {
+            content.getChildren().add(readOnlyRow("Nguoi gui", report.getNguoiGui()));
+        }
+        content.getChildren().add(readOnlyRow("Trang thai xu ly", report.getTrangThai()));
+        content.getChildren().add(readOnlyRow("Nguoi tiep nhan", report.getNguoiPhuTrach()));
+        content.getChildren().add(readOnlyArea("Phan hoi tu Ban quan ly", report.getPhanHoi()));
+        content.getChildren().add(imagePreviewSection(report.getHinhAnh()));
+
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setPrefViewportHeight(560);
+        dialog.getDialogPane().setContent(scrollPane);
+        dialog.showAndWait();
+    }
+
+    private Node readOnlyRow(String label, String value) {
+        TextField field = new TextField(valueOrEmpty(value));
+        field.setEditable(false);
+        field.setFocusTraversable(false);
+        field.setMaxWidth(Double.MAX_VALUE);
+        return new VBox(5, new Label(label), field);
+    }
+
+    private Node readOnlyArea(String label, String value) {
+        TextArea area = new TextArea(valueOrEmpty(value));
+        area.setEditable(false);
+        area.setWrapText(true);
+        area.setPrefRowCount(4);
+        area.setFocusTraversable(false);
+        return new VBox(5, new Label(label), area);
+    }
+
+    private Node imagePreviewSection(List<String> imagePaths) {
+        HBox images = new HBox(8);
+        images.setAlignment(Pos.CENTER_LEFT);
+        if (imagePaths == null || imagePaths.isEmpty()) {
+            images.getChildren().add(new Label("Khong co hinh anh dinh kem."));
+        } else {
+            for (String path : imagePaths) {
+                File file = new File(path);
+                if (file.exists()) {
+                    ImageView imageView = new ImageView(new Image(file.toURI().toString(), 120, 90, true, true));
+                    imageView.setFitWidth(120);
+                    imageView.setFitHeight(90);
+                    imageView.setPreserveRatio(true);
+                    images.getChildren().add(imageView);
+                } else {
+                    images.getChildren().add(new Label(file.getName() + " (khong tim thay)"));
+                }
+            }
+        }
+        return new VBox(5, new Label("Xem truoc hinh anh"), images);
+    }
+
+    private String imageSummary(List<String> imagePaths) {
+        if (imagePaths == null || imagePaths.isEmpty()) {
+            return "Khong co";
+        }
+        return imagePaths.size() + " tep";
+    }
+
+    private String valueOf(Object value) {
+        return value == null ? "" : value.toString();
+    }
+
+    private String valueOrEmpty(String value) {
+        return value == null || value.isBlank() ? "" : value;
     }
 
     private void showAddReportDialog() {
@@ -481,3 +576,5 @@ public class PhanAnhController {
         alert.showAndWait();
     }
 }
+
+

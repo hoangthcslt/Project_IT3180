@@ -59,7 +59,7 @@ public class HouseholdController {
         colSoOto.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getSoOto()));
         colNgayLap.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getNgayLap()));
         colHoatDong.setCellFactory(col -> actionCell());
-        tableHoKhau.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        tableHoKhau.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         tableHoKhau.setItems(householdList);
 
         setupButton(btnSearchHousehold, "#0ea5e9", "#0284c7");
@@ -187,8 +187,14 @@ public class HouseholdController {
         alert.setTitle("Xác nhận xóa");
         alert.setHeaderText(null);
         if (alert.showAndWait().orElse(ButtonType.NO) == ButtonType.YES) {
-            if (householdService.deleteHousehold(household.getId())) loadData();
-            else showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể xóa hộ khẩu.");
+            try {
+                System.out.println("Delete button clicked for ho_khau id: " + household.getId()
+                        + ", ma_ho_khau: " + household.getMaHoKhau());
+                if (householdService.deleteHousehold(household.getId())) loadData();
+            } catch (IllegalStateException e) {
+                showAlert(Alert.AlertType.ERROR, "Loi", e.getMessage());
+                return;
+            }
         }
     }
 

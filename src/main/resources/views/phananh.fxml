@@ -40,7 +40,7 @@
                             <TableColumn fx:id="colCitizenDate" prefWidth="140.0" style="-fx-alignment: CENTER;" text="Ngày gửi" />
                             <TableColumn fx:id="colCitizenStatus" prefWidth="130.0" style="-fx-alignment: CENTER;" text="Trạng thái" />
                             <TableColumn fx:id="colCitizenAssignee" prefWidth="140.0" style="-fx-alignment: CENTER;" text="Người tiếp nhận" />
-                            <TableColumn fx:id="colCitizenActions" prefWidth="150.0" style="-fx-alignment: CENTER;" text="Thao tác" />
+                            <TableColumn fx:id="colCitizenActions" prefWidth="250.0" style="-fx-alignment: CENTER;" text="Thao tác" />
                         </columns>
                     </TableView>
                 </VBox>
@@ -59,7 +59,7 @@
                             <TableColumn fx:id="colAdminDate" prefWidth="140.0" style="-fx-alignment: CENTER;" text="Ngày gửi" />
                             <TableColumn fx:id="colAdminStatus" prefWidth="120.0" style="-fx-alignment: CENTER;" text="Trạng thái" />
                             <TableColumn fx:id="colAdminAssignee" prefWidth="180.0" text="Người phụ trách" />
-                            <TableColumn fx:id="colAdminActions" prefWidth="120.0" style="-fx-alignment: CENTER;" text="Thao tác" />
+                            <TableColumn fx:id="colAdminActions" prefWidth="180.0" style="-fx-alignment: CENTER;" text="Thao tác" />
                         </columns>
                     </TableView>
                 </VBox>
@@ -67,3 +67,4 @@
         </tabs>
     </TabPane>
 </VBox>
+
