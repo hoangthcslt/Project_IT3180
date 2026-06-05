@@ -15,7 +15,16 @@ public class DBConnection {
 
     public static Connection getConnection() throws SQLException {
         if (connection == null || connection.isClosed()) {
-            connection = DriverManager.getConnection(URL, USER, PASSWORD);
+            try {
+                connection = DriverManager.getConnection(URL, USER, PASSWORD);
+            } catch (SQLException e) {
+                // If password connection fails, try with empty password as a fallback
+                try {
+                    connection = DriverManager.getConnection(URL, USER, "");
+                } catch (SQLException ex) {
+                    throw e; // throw original if fallback fails too
+                }
+            }
         }
         return connection;
     }

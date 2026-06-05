@@ -256,11 +256,13 @@ public class DashboardController {
 
     private void showHouseholdListView() {
         TableView<HoKhau> table = createReadOnlyTable();
-        table.getColumns().add(column("ID", "id", 70));
-        table.getColumns().add(column("Mã hộ khẩu", "maHoKhau", 160));
-        table.getColumns().add(column("Tên chủ hộ", "tenChuHo", 220));
-        table.getColumns().add(column("Diện tích", "dienTich", 130));
-        table.getColumns().add(column("Ngày lập", "ngayLap", 140));
+        table.getColumns().add(column("ID", "id", 50));
+        table.getColumns().add(column("Mã hộ khẩu", "maHoKhau", 130));
+        table.getColumns().add(column("Tên chủ hộ", "tenChuHo", 180));
+        table.getColumns().add(column("Diện tích", "dienTich", 100));
+        table.getColumns().add(column("Số xe máy", "soXeMay", 100));
+        table.getColumns().add(column("Số ô tô", "soOto", 100));
+        table.getColumns().add(column("Ngày lập", "ngayLap", 120));
         table.getItems().setAll(householdService.getAllHouseholds());
         mainBorderPane.setCenter(
                 createReadOnlyPage("Danh sách hộ khẩu", "Dữ liệu được tải trực tiếp từ chức năng Hộ khẩu.", table));
@@ -268,13 +270,15 @@ public class DashboardController {
 
     private void showResidentListView() {
         TableView<NhanKhau> table = createReadOnlyTable();
-        table.getColumns().add(column("ID", "id", 70));
-        table.getColumns().add(column("Họ tên", "hoTen", 220));
-        table.getColumns().add(column("Ngày sinh", "ngaySinh", 130));
-        table.getColumns().add(column("Giới tính", "gioiTinh", 110));
-        table.getColumns().add(column("CCCD", "cccd", 160));
-        table.getColumns().add(column("Hộ khẩu", "hoKhauId", 110));
-        table.getColumns().add(column("Trạng thái", "trangThai", 140));
+        table.getColumns().add(column("ID", "id", 50));
+        table.getColumns().add(column("Họ tên", "hoTen", 180));
+        table.getColumns().add(column("Ngày sinh", "ngaySinh", 110));
+        table.getColumns().add(column("Giới tính", "gioiTinh", 80));
+        table.getColumns().add(column("CCCD", "cccd", 130));
+        table.getColumns().add(column("Số điện thoại", "soDienThoai", 120));
+        table.getColumns().add(column("Quan hệ", "quanHe", 120));
+        table.getColumns().add(column("Hộ khẩu", "hoKhauId", 90));
+        table.getColumns().add(column("Trạng thái", "trangThai", 110));
         table.getItems().setAll(residentService.getAllResidents());
         mainBorderPane.setCenter(
                 createReadOnlyPage("Danh sách nhân khẩu", "Dữ liệu được tải trực tiếp từ chức năng Nhân khẩu.", table));
@@ -282,12 +286,14 @@ public class DashboardController {
 
     private void showFeeListView() {
         TableView<KhoanThu> table = createReadOnlyTable();
-        table.getColumns().add(column("ID", "id", 70));
-        table.getColumns().add(column("Mã khoản thu", "maKhoanThu", 150));
-        table.getColumns().add(column("Tên khoản thu", "tenKhoanThu", 240));
-        table.getColumns().add(column("Số tiền", "donGia", 130));
-        table.getColumns().add(column("Hạn đóng", "ngayTao", 140));
-        table.getColumns().add(column("Trạng thái", "loaiPhi", 140));
+        table.getColumns().add(column("ID", "id", 50));
+        table.getColumns().add(column("Mã khoản thu", "maKhoanThu", 120));
+        table.getColumns().add(column("Tên khoản thu", "tenKhoanThu", 200));
+        table.getColumns().add(column("Loại phí", "loaiPhi", 100));
+        table.getColumns().add(column("Đơn giá", "donGia", 110));
+        table.getColumns().add(column("Ngày tạo", "ngayTao", 110));
+        table.getColumns().add(column("Hạn nộp", "hanNop", 110));
+        table.getColumns().add(column("Trạng thái", "trangThai", 110));
         table.getItems().setAll(feeService.getAllFees());
         mainBorderPane.setCenter(
                 createReadOnlyPage("Danh sách khoản thu", "Dữ liệu được tải trực tiếp từ chức năng Khoản thu.", table));

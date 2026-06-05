@@ -401,6 +401,10 @@ public class PermissionRepository {
             pstmt.setString(1, "ACCOUNTANT");
             pstmt.setString(2, "Nhóm kế toán viên");
             pstmt.executeUpdate();
+
+            pstmt.setString(1, "cư dân");
+            pstmt.setString(2, "Nhóm cư dân chung cư");
+            pstmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
