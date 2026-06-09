@@ -161,35 +161,46 @@ public class HoaDonRepository {
                         BigDecimal qty = BigDecimal.ZERO;
                         BigDecimal rate = dm.getDonGia();
 
-                        if ("THEO_DIEN_TICH".equals(dm.getLoaiTinhGia())) {
-                            qty = hk.getDienTich();
-                            if (qty == null) qty = BigDecimal.ZERO;
-                        } else if ("THEO_SO_NGUOI".equals(dm.getLoaiTinhGia())) {
-                            qty = BigDecimal.valueOf(hk.getSoNguoi());
-                        } else if ("CO_DINH".equals(dm.getLoaiTinhGia())) {
+                        if ("TU_NGUYEN".equals(dm.getLoaiPhi())) {
                             qty = BigDecimal.ONE;
-                        } else if ("NHAP_TAY".equals(dm.getLoaiTinhGia())) {
-                            // Manual fields are initialized to 0
-                            qty = BigDecimal.ZERO;
+                            rate = BigDecimal.ZERO;
+                        } else {
+                            if ("THEO_DIEN_TICH".equals(dm.getLoaiTinhGia())) {
+                                qty = hk.getDienTich();
+                                if (qty == null) qty = BigDecimal.ZERO;
+                            } else if ("THEO_SO_NGUOI".equals(dm.getLoaiTinhGia())) {
+                                qty = BigDecimal.valueOf(hk.getSoNguoi());
+                            } else if ("CO_DINH".equals(dm.getLoaiTinhGia())) {
+                                qty = BigDecimal.ONE;
+                            } else if ("NHAP_TAY".equals(dm.getLoaiTinhGia())) {
+                                // Manual fields are initialized to 0
+                                qty = BigDecimal.ZERO;
+                            }
+
+                            // Special case: Parking Fee (GUI_XE or custom logic)
+                            // If we have distinct rates for motorbike and car:
+                            // In v2, parking fee is calculated as: number of motorbikes * don_gia_xe_may + number of cars * don_gia_oto.
+                            // Let's check how we handle it:
+                            // If ma_phi is 'GUI_XE' (or similar), we could add specific rows for 'XE_MAY' and 'OTO'.
+                            // To make it fully dynamic and compliant with the user request:
+                            // Let's create two fee definitions in `danh_muc_phi`:
+                            // 1. 'XEMAY': Phí gửi xe máy, loai_tinh_gia = 'CO_DINH' (flat, but we set quantity = hk.getSoXeMay())
+                            // 2. 'OTO': Phí gửi xe ô tô, loai_tinh_gia = 'CO_DINH' (flat, but we set quantity = hk.getSoOto())
+                            // Let's check if the table has these or if we should map them:
+                            if ("XEMAY".equals(dm.getMaPhi())) {
+                                qty = BigDecimal.valueOf(hk.getSoXeMay());
+                            } else if ("OTO".equals(dm.getMaPhi())) {
+                                qty = BigDecimal.valueOf(hk.getSoOto());
+                            }
                         }
 
-                        // Special case: Parking Fee (GUI_XE or custom logic)
-                        // If we have distinct rates for motorbike and car:
-                        // In v2, parking fee is calculated as: number of motorbikes * don_gia_xe_may + number of cars * don_gia_oto.
-                        // Let's check how we handle it:
-                        // If ma_phi is 'GUI_XE' (or similar), we could add specific rows for 'XE_MAY' and 'OTO'.
-                        // To make it fully dynamic and compliant with the user request:
-                        // Let's create two fee definitions in `danh_muc_phi`:
-                        // 1. 'XEMAY': Phí gửi xe máy, loai_tinh_gia = 'CO_DINH' (flat, but we set quantity = hk.getSoXeMay())
-                        // 2. 'OTO': Phí gửi xe ô tô, loai_tinh_gia = 'CO_DINH' (flat, but we set quantity = hk.getSoOto())
-                        // Let's check if the table has these or if we should map them:
-                        if ("XEMAY".equals(dm.getMaPhi())) {
-                            qty = BigDecimal.valueOf(hk.getSoXeMay());
-                        } else if ("OTO".equals(dm.getMaPhi())) {
-                            qty = BigDecimal.valueOf(hk.getSoOto());
+                        BigDecimal itemTotal;
+                        if ("DIEN".equals(dm.getMaPhi())) {
+                            itemTotal = com.bluemoon.models.DanhMucPhi.calculateDienPrice(qty, dm.getGhiChu());
+                            rate = qty.compareTo(BigDecimal.ZERO) > 0 ? itemTotal.divide(qty, 2, java.math.RoundingMode.HALF_UP) : BigDecimal.ZERO;
+                        } else {
+                            itemTotal = rate.multiply(qty);
                         }
-
-                        BigDecimal itemTotal = rate.multiply(qty);
                         totalInvoiceAmount = totalInvoiceAmount.add(itemTotal);
 
                         psDet.setInt(1, hoaDonId);
@@ -240,18 +251,38 @@ public class HoaDonRepository {
             conn = DBConnection.getConnection();
             conn.setAutoCommit(false);
 
-            String updateDetail = "UPDATE chi_tiet_hoa_don SET so_luong = ?, thanh_tien = ? WHERE id = ?";
+            String updateDetail = "UPDATE chi_tiet_hoa_don SET so_luong = ?, don_gia = ?, thanh_tien = ? WHERE id = ?";
             BigDecimal totalInvoiceAmount = BigDecimal.ZERO;
+
+            // Fetch electricity tiers config
+            String queryDienGhiChu = "SELECT ghi_chu FROM danh_muc_phi WHERE ma_phi = 'DIEN'";
+            String dienGhiChu = "";
+            try (PreparedStatement psD = conn.prepareStatement(queryDienGhiChu);
+                 ResultSet rsD = psD.executeQuery()) {
+                if (rsD.next()) {
+                    dienGhiChu = rsD.getString("ghi_chu");
+                }
+            }
 
             try (PreparedStatement pstmt = conn.prepareStatement(updateDetail)) {
                 for (ChiTietHoaDon det : details) {
                     BigDecimal rate = det.getDonGia();
                     BigDecimal qty = det.getSoLuong();
-                    BigDecimal itemTotal = rate.multiply(qty);
+                    BigDecimal itemTotal;
+
+                    if ("DIEN".equals(det.getMaPhi())) {
+                        itemTotal = com.bluemoon.models.DanhMucPhi.calculateDienPrice(qty, dienGhiChu);
+                        rate = qty.compareTo(BigDecimal.ZERO) > 0 ? itemTotal.divide(qty, 2, java.math.RoundingMode.HALF_UP) : BigDecimal.ZERO;
+                        det.setDonGia(rate);
+                        det.setThanhTien(itemTotal);
+                    } else {
+                        itemTotal = rate.multiply(qty);
+                    }
 
                     pstmt.setBigDecimal(1, qty);
-                    pstmt.setBigDecimal(2, itemTotal);
-                    pstmt.setInt(3, det.getId());
+                    pstmt.setBigDecimal(2, rate);
+                    pstmt.setBigDecimal(3, itemTotal);
+                    pstmt.setInt(4, det.getId());
                     pstmt.executeUpdate();
 
                     totalInvoiceAmount = totalInvoiceAmount.add(itemTotal);

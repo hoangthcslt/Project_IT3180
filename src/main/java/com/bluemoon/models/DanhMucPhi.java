@@ -80,6 +80,66 @@ public class DanhMucPhi {
         this.ghiChu = ghiChu;
     }
 
+    public static double[][] parseDienTiers(String ghiChu) {
+        double[][] defaultTiers = {
+            {1984.0, 50.0},
+            {2050.0, 50.0},
+            {2380.0, 100.0},
+            {2998.0, 100.0},
+            {3350.0, 100.0},
+            {3460.0, 0.0}
+        };
+        
+        if (ghiChu == null || ghiChu.trim().isEmpty() || !ghiChu.contains(",") || !ghiChu.contains(";")) {
+            return defaultTiers;
+        }
+        
+        try {
+            String[] parts = ghiChu.trim().split(";");
+            if (parts.length != 6) {
+                return defaultTiers;
+            }
+            double[][] parsed = new double[6][2];
+            for (int i = 0; i < 6; i++) {
+                String[] subParts = parts[i].split(",");
+                parsed[i][0] = Double.parseDouble(subParts[0].trim());
+                parsed[i][1] = Double.parseDouble(subParts[1].trim());
+            }
+            return parsed;
+        } catch (Exception e) {
+            return defaultTiers;
+        }
+    }
+
+    public static BigDecimal calculateDienPrice(BigDecimal qty, String ghiChu) {
+        if (qty == null || qty.compareTo(BigDecimal.ZERO) <= 0) {
+            return BigDecimal.ZERO;
+        }
+        
+        double[][] tiers = parseDienTiers(ghiChu);
+        double qtyVal = qty.doubleValue();
+        double totalAmount = 0.0;
+        
+        for (int i = 0; i < tiers.length; i++) {
+            double price = tiers[i][0];
+            double limit = tiers[i][1];
+            
+            if (limit > 0) {
+                double usage = Math.min(qtyVal, limit);
+                totalAmount += usage * price;
+                qtyVal -= usage;
+                if (qtyVal <= 0) {
+                    break;
+                }
+            } else {
+                totalAmount += qtyVal * price;
+                break;
+            }
+        }
+        
+        return BigDecimal.valueOf(totalAmount).setScale(2, java.math.RoundingMode.HALF_UP);
+    }
+
     @Override
     public String toString() {
         return tenPhi + " (" + maPhi + ")";

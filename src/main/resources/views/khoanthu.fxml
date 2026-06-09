@@ -53,29 +53,53 @@
             </VBox>
          </Tab>
 
-         <!-- TAB 2: DANH MỤC PHÍ CỐ ĐỊNH -->
-         <Tab text="Cấu hình phí cố định">
+         <!-- TAB 2: CẤU HÌNH PHÍ BẮT BUỘC -->
+         <Tab text="Cấu hình phí bắt buộc">
             <VBox spacing="15.0">
                <padding>
                   <Insets top="15.0" />
                </padding>
                <HBox spacing="10.0" alignment="CENTER_LEFT" style="-fx-background-color: white; -fx-padding: 10 15; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8;">
-                  <Button fx:id="btnAddFixedFee" mnemonicParsing="false" onAction="#handleShowAddFixedFee" text="+ Thêm phí mới" style="-fx-background-color: #22c55e; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 6; -fx-cursor: hand;" />
-                  <TextField fx:id="txtSearchFixedFee" promptText="Tìm theo tên/mã phí..." style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-padding: 7 10; -fx-pref-width: 250px;" />
-                  <Button fx:id="btnSearchFixedFee" mnemonicParsing="false" onAction="#handleSearchFixedFee" text="Tìm kiếm" style="-fx-background-color: #0ea5e9; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 6; -fx-cursor: hand;" />
-                  <Button fx:id="btnResetFixedFee" mnemonicParsing="false" onAction="#handleResetFixedFee" text="Đặt lại" style="-fx-background-color: #64748b; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 6; -fx-cursor: hand;" />
+                  <Button fx:id="btnAddMandatoryFee" mnemonicParsing="false" onAction="#handleShowAddMandatoryFee" text="+ Thêm phí mới" style="-fx-background-color: #22c55e; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 6; -fx-cursor: hand;" />
+                  <TextField fx:id="txtSearchMandatoryFee" promptText="Tìm theo tên/mã phí..." style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-padding: 7 10; -fx-pref-width: 250px;" />
+                  <Button fx:id="btnSearchMandatoryFee" mnemonicParsing="false" onAction="#handleSearchMandatoryFee" text="Tìm kiếm" style="-fx-background-color: #0ea5e9; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 6; -fx-cursor: hand;" />
+                  <Button fx:id="btnResetMandatoryFee" mnemonicParsing="false" onAction="#handleResetMandatoryFee" text="Đặt lại" style="-fx-background-color: #64748b; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 6; -fx-cursor: hand;" />
                </HBox>
                
-               <TableView fx:id="tableFixedFees" VBox.vgrow="ALWAYS" style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #cbd5e1; -fx-border-radius: 8;">
+               <TableView fx:id="tableMandatoryFees" VBox.vgrow="ALWAYS" style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #cbd5e1; -fx-border-radius: 8;">
                   <columns>
-                     <TableColumn fx:id="colFixedId" prefWidth="50.0" style="-fx-alignment: CENTER;" text="ID" />
-                     <TableColumn fx:id="colFixedCode" prefWidth="120.0" text="Mã Phí" />
-                     <TableColumn fx:id="colFixedName" prefWidth="180.0" text="Tên Phí" />
-                     <TableColumn fx:id="colFixedType" prefWidth="120.0" text="Loại Phí" />
-                     <TableColumn fx:id="colFixedCalcType" prefWidth="150.0" text="Loại Tính Giá" />
-                     <TableColumn fx:id="colFixedPrice" prefWidth="120.0" text="Đơn Giá" />
-                     <TableColumn fx:id="colFixedNote" prefWidth="150.0" text="Ghi Chú" />
-                     <TableColumn fx:id="colFixedActions" prefWidth="120.0" style="-fx-alignment: CENTER;" text="Hành Động" />
+                     <TableColumn fx:id="colMandatoryId" prefWidth="50.0" style="-fx-alignment: CENTER;" text="ID" />
+                     <TableColumn fx:id="colMandatoryCode" prefWidth="120.0" text="Mã Phí" />
+                     <TableColumn fx:id="colMandatoryName" prefWidth="180.0" text="Tên Phí" />
+                     <TableColumn fx:id="colMandatoryCalcType" prefWidth="150.0" text="Loại Tính Giá" />
+                     <TableColumn fx:id="colMandatoryPrice" prefWidth="120.0" text="Đơn Giá" />
+                     <TableColumn fx:id="colMandatoryNote" prefWidth="150.0" text="Ghi Chú" />
+                     <TableColumn fx:id="colMandatoryActions" prefWidth="120.0" style="-fx-alignment: CENTER;" text="Hành Động" />
+                  </columns>
+               </TableView>
+            </VBox>
+         </Tab>
+
+         <!-- TAB 3: CẤU HÌNH PHÍ TỰ NGUYỆN -->
+         <Tab text="Cấu hình phí tự nguyện">
+            <VBox spacing="15.0">
+               <padding>
+                  <Insets top="15.0" />
+               </padding>
+               <HBox spacing="10.0" alignment="CENTER_LEFT" style="-fx-background-color: white; -fx-padding: 10 15; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8;">
+                  <Button fx:id="btnAddVoluntaryFee" mnemonicParsing="false" onAction="#handleShowAddVoluntaryFee" text="+ Thêm phí mới" style="-fx-background-color: #22c55e; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 6; -fx-cursor: hand;" />
+                  <TextField fx:id="txtSearchVoluntaryFee" promptText="Tìm theo tên/mã phí..." style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-padding: 7 10; -fx-pref-width: 250px;" />
+                  <Button fx:id="btnSearchVoluntaryFee" mnemonicParsing="false" onAction="#handleSearchVoluntaryFee" text="Tìm kiếm" style="-fx-background-color: #0ea5e9; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 6; -fx-cursor: hand;" />
+                  <Button fx:id="btnResetVoluntaryFee" mnemonicParsing="false" onAction="#handleResetVoluntaryFee" text="Đặt lại" style="-fx-background-color: #64748b; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 6; -fx-cursor: hand;" />
+               </HBox>
+               
+               <TableView fx:id="tableVoluntaryFees" VBox.vgrow="ALWAYS" style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #cbd5e1; -fx-border-radius: 8;">
+                  <columns>
+                     <TableColumn fx:id="colVoluntaryId" prefWidth="50.0" style="-fx-alignment: CENTER;" text="ID" />
+                     <TableColumn fx:id="colVoluntaryCode" prefWidth="120.0" text="Mã Phí" />
+                     <TableColumn fx:id="colVoluntaryName" prefWidth="200.0" text="Tên Phí" />
+                     <TableColumn fx:id="colVoluntaryNote" prefWidth="250.0" text="Ghi Chú" />
+                     <TableColumn fx:id="colVoluntaryActions" prefWidth="120.0" style="-fx-alignment: CENTER;" text="Hành Động" />
                   </columns>
                </TableView>
             </VBox>

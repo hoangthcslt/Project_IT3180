@@ -32,19 +32,27 @@ import java.util.Optional;
 
 public class FeeController {
 
-    // Tab 1: Fixed Fees
-    @FXML private TableView<DanhMucPhi> tableFixedFees;
-    @FXML private TableColumn<DanhMucPhi, Integer> colFixedId;
-    @FXML private TableColumn<DanhMucPhi, String> colFixedCode;
-    @FXML private TableColumn<DanhMucPhi, String> colFixedName;
-    @FXML private TableColumn<DanhMucPhi, String> colFixedType;
-    @FXML private TableColumn<DanhMucPhi, String> colFixedCalcType;
-    @FXML private TableColumn<DanhMucPhi, BigDecimal> colFixedPrice;
-    @FXML private TableColumn<DanhMucPhi, String> colFixedNote;
-    @FXML private TableColumn<DanhMucPhi, Void> colFixedActions;
-    @FXML private TextField txtSearchFixedFee;
+    // Tab 2: Mandatory Fees
+    @FXML private TableView<DanhMucPhi> tableMandatoryFees;
+    @FXML private TableColumn<DanhMucPhi, Integer> colMandatoryId;
+    @FXML private TableColumn<DanhMucPhi, String> colMandatoryCode;
+    @FXML private TableColumn<DanhMucPhi, String> colMandatoryName;
+    @FXML private TableColumn<DanhMucPhi, String> colMandatoryCalcType;
+    @FXML private TableColumn<DanhMucPhi, BigDecimal> colMandatoryPrice;
+    @FXML private TableColumn<DanhMucPhi, String> colMandatoryNote;
+    @FXML private TableColumn<DanhMucPhi, Void> colMandatoryActions;
+    @FXML private TextField txtSearchMandatoryFee;
 
-    // Tab 2: Billing Runs
+    // Tab 3: Voluntary Fees
+    @FXML private TableView<DanhMucPhi> tableVoluntaryFees;
+    @FXML private TableColumn<DanhMucPhi, Integer> colVoluntaryId;
+    @FXML private TableColumn<DanhMucPhi, String> colVoluntaryCode;
+    @FXML private TableColumn<DanhMucPhi, String> colVoluntaryName;
+    @FXML private TableColumn<DanhMucPhi, String> colVoluntaryNote;
+    @FXML private TableColumn<DanhMucPhi, Void> colVoluntaryActions;
+    @FXML private TextField txtSearchVoluntaryFee;
+
+    // Tab 1: Billing Runs
     @FXML private TableView<KhoanThu> tableBillingRuns;
     @FXML private TableColumn<KhoanThu, Integer> colRunId;
     @FXML private TableColumn<KhoanThu, String> colRunCode;
@@ -60,7 +68,8 @@ public class FeeController {
     private HoaDonService invoiceService;
     private FeeRepository feeRepository;
 
-    private ObservableList<DanhMucPhi> fixedFeeList;
+    private ObservableList<DanhMucPhi> mandatoryFeeList;
+    private ObservableList<DanhMucPhi> voluntaryFeeList;
     private ObservableList<KhoanThu> billingRunList;
 
     @FXML
@@ -70,20 +79,59 @@ public class FeeController {
         invoiceService = new HoaDonService();
         feeRepository = new FeeRepository();
 
-        fixedFeeList = FXCollections.observableArrayList();
+        mandatoryFeeList = FXCollections.observableArrayList();
+        voluntaryFeeList = FXCollections.observableArrayList();
         billingRunList = FXCollections.observableArrayList();
 
-        // 1. Setup Tab 1: Fixed Fees Columns
-        colFixedId.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getId()));
-        colFixedCode.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getMaPhi()));
-        colFixedName.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getTenPhi()));
-        colFixedType.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getLoaiPhi()));
-        colFixedCalcType.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getLoaiTinhGia()));
-        colFixedPrice.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getDonGia()));
-        colFixedNote.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getGhiChu()));
-        colFixedActions.setCellFactory(col -> actionCellFixedFees());
+        // 1. Setup Tab 2: Mandatory Fees Columns
+        colMandatoryId.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getId()));
+        colMandatoryCode.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getMaPhi()));
+        colMandatoryName.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getTenPhi()));
+        colMandatoryCalcType.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getLoaiTinhGia()));
+        colMandatoryPrice.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getDonGia()));
+        colMandatoryPrice.setCellFactory(col -> new TableCell<DanhMucPhi, BigDecimal>() {
+            @Override
+            protected void updateItem(BigDecimal item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || getTableRow() == null || getTableRow().getItem() == null) {
+                    setText(null);
+                } else {
+                    DanhMucPhi phi = getTableRow().getItem();
+                    if ("DIEN".equals(phi.getMaPhi())) {
+                        setText("Theo bậc thang");
+                    } else {
+                        setText(item != null ? item.toString() : "0");
+                    }
+                }
+            }
+        });
+        colMandatoryNote.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getGhiChu()));
+        colMandatoryNote.setCellFactory(col -> new TableCell<DanhMucPhi, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || getTableRow() == null || getTableRow().getItem() == null) {
+                    setText(null);
+                } else {
+                    DanhMucPhi phi = getTableRow().getItem();
+                    if ("DIEN".equals(phi.getMaPhi())) {
+                        setText("Tiền điện hàng tháng tính theo bậc thang");
+                    } else {
+                        setText(item);
+                    }
+                }
+            }
+        });
+        colMandatoryActions.setCellFactory(col -> actionCellMandatoryFees());
 
-        // 2. Setup Tab 2: Billing Runs Columns
+        // 2. Setup Tab 3: Voluntary Fees Columns
+        colVoluntaryId.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getId()));
+        colVoluntaryCode.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getMaPhi()));
+        colVoluntaryName.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getTenPhi()));
+        colVoluntaryNote.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getGhiChu()));
+        colVoluntaryActions.setCellFactory(col -> actionCellVoluntaryFees());
+
+        // 3. Setup Tab 1: Billing Runs Columns
         colRunId.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getId()));
         colRunCode.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getMaKhoanThu()));
         colRunName.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getTenKhoanThu()));
@@ -92,7 +140,8 @@ public class FeeController {
         colRunStatus.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getTrangThai()));
         colRunActions.setCellFactory(col -> actionCellBillingRuns());
 
-        tableFixedFees.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tableMandatoryFees.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tableVoluntaryFees.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         tableBillingRuns.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         // Load data
@@ -101,8 +150,25 @@ public class FeeController {
     }
 
     private void loadFixedFees() {
-        fixedFeeList.setAll(fixedFeeService.getAllDanhMucPhi());
-        tableFixedFees.setItems(fixedFeeList);
+        List<DanhMucPhi> allFees = fixedFeeService.getAllDanhMucPhi();
+        List<DanhMucPhi> mandatory = new ArrayList<>();
+        List<DanhMucPhi> voluntary = new ArrayList<>();
+        for (DanhMucPhi f : allFees) {
+            if ("BAT_BUOC".equals(f.getLoaiPhi())) {
+                mandatory.add(f);
+            } else if ("TU_NGUYEN".equals(f.getLoaiPhi())) {
+                voluntary.add(f);
+            }
+        }
+        mandatory.sort((f1, f2) -> {
+            if ("DIEN".equals(f1.getMaPhi())) return -1;
+            if ("DIEN".equals(f2.getMaPhi())) return 1;
+            return f1.getMaPhi().compareTo(f2.getMaPhi());
+        });
+        mandatoryFeeList.setAll(mandatory);
+        voluntaryFeeList.setAll(voluntary);
+        tableMandatoryFees.setItems(mandatoryFeeList);
+        tableVoluntaryFees.setItems(voluntaryFeeList);
     }
 
     private void loadBillingRuns() {
@@ -110,33 +176,58 @@ public class FeeController {
         tableBillingRuns.setItems(billingRunList);
     }
 
-    // --- TAB 1 ACTIONS ---
+    // --- TAB 2 & 3 ACTIONS ---
 
     @FXML
-    void handleShowAddFixedFee(ActionEvent event) {
-        showFixedFeeDialog(null);
+    void handleShowAddMandatoryFee(ActionEvent event) {
+        showMandatoryFeeDialog(null);
     }
 
     @FXML
-    void handleSearchFixedFee(ActionEvent event) {
-        String kw = txtSearchFixedFee.getText();
+    void handleSearchMandatoryFee(ActionEvent event) {
+        String kw = txtSearchMandatoryFee.getText();
         if (kw == null || kw.trim().isEmpty()) {
             loadFixedFees();
             return;
         }
-        fixedFeeList.setAll(fixedFeeService.searchDanhMucPhi(kw, kw, null, null));
+        mandatoryFeeList.setAll(fixedFeeService.searchDanhMucPhi(kw, kw, "BAT_BUOC", null));
     }
 
     @FXML
-    void handleResetFixedFee(ActionEvent event) {
-        txtSearchFixedFee.clear();
+    void handleResetMandatoryFee(ActionEvent event) {
+        txtSearchMandatoryFee.clear();
         loadFixedFees();
     }
 
-    private void showFixedFeeDialog(DanhMucPhi item) {
+    @FXML
+    void handleShowAddVoluntaryFee(ActionEvent event) {
+        showVoluntaryFeeDialog(null);
+    }
+
+    @FXML
+    void handleSearchVoluntaryFee(ActionEvent event) {
+        String kw = txtSearchVoluntaryFee.getText();
+        if (kw == null || kw.trim().isEmpty()) {
+            loadFixedFees();
+            return;
+        }
+        voluntaryFeeList.setAll(fixedFeeService.searchDanhMucPhi(kw, kw, "TU_NGUYEN", null));
+    }
+
+    @FXML
+    void handleResetVoluntaryFee(ActionEvent event) {
+        txtSearchVoluntaryFee.clear();
+        loadFixedFees();
+    }
+
+    private void showMandatoryFeeDialog(DanhMucPhi item) {
         boolean adding = (item == null);
+        if (!adding && "DIEN".equals(item.getMaPhi())) {
+            showDienPricingDialog(item);
+            return;
+        }
         Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle(adding ? "Thêm phí cố định mới" : "Chỉnh sửa phí cố định");
+        dialog.setTitle(adding ? "Thêm phí bắt buộc mới" : "Chỉnh sửa phí bắt buộc");
         dialog.setHeaderText(null);
 
         ButtonType okButtonType = new ButtonType("OK", ButtonData.OK_DONE);
@@ -151,9 +242,6 @@ public class FeeController {
         if (!adding) txtCode.setDisable(true); // Can't change code after creation
         TextField txtName = new TextField(adding ? "" : item.getTenPhi());
         
-        ComboBox<String> cbType = new ComboBox<>(FXCollections.observableArrayList("BAT_BUOC", "TU_NGUYEN"));
-        cbType.setValue(adding ? "BAT_BUOC" : item.getLoaiPhi());
-
         ComboBox<String> cbCalc = new ComboBox<>(FXCollections.observableArrayList("CO_DINH", "THEO_DIEN_TICH", "THEO_SO_NGUOI", "NHAP_TAY"));
         cbCalc.setValue(adding ? "CO_DINH" : item.getLoaiTinhGia());
 
@@ -164,14 +252,12 @@ public class FeeController {
         grid.add(txtCode, 1, 0);
         grid.add(new Label("Tên phí:"), 0, 1);
         grid.add(txtName, 1, 1);
-        grid.add(new Label("Loại phí:"), 0, 2);
-        grid.add(cbType, 1, 2);
-        grid.add(new Label("Loại tính giá:"), 0, 3);
-        grid.add(cbCalc, 1, 3);
-        grid.add(new Label("Đơn giá (VND):"), 0, 4);
-        grid.add(txtPrice, 1, 4);
-        grid.add(new Label("Ghi chú:"), 0, 5);
-        grid.add(txtNote, 1, 5);
+        grid.add(new Label("Loại tính giá:"), 0, 2);
+        grid.add(cbCalc, 1, 2);
+        grid.add(new Label("Đơn giá (VND):"), 0, 3);
+        grid.add(txtPrice, 1, 3);
+        grid.add(new Label("Ghi chú:"), 0, 4);
+        grid.add(txtNote, 1, 4);
 
         dialog.getDialogPane().setContent(grid);
 
@@ -200,14 +286,79 @@ public class FeeController {
                 DanhMucPhi phi = adding ? new DanhMucPhi() : item;
                 phi.setMaPhi(txtCode.getText().trim().toUpperCase());
                 phi.setTenPhi(txtName.getText().trim());
-                phi.setLoaiPhi(cbType.getValue());
+                phi.setLoaiPhi("BAT_BUOC");
                 phi.setLoaiTinhGia(cbCalc.getValue());
                 phi.setDonGia(new BigDecimal(txtPrice.getText().trim()));
                 phi.setGhiChu(txtNote.getText().trim());
 
                 boolean success = adding ? fixedFeeService.addDanhMucPhi(phi) : fixedFeeService.updateDanhMucPhi(phi);
                 if (success) {
-                    showAlert(Alert.AlertType.INFORMATION, "Thành công", "Lưu thông tin phí cố định thành công.");
+                    showAlert(Alert.AlertType.INFORMATION, "Thành công", "Lưu thông tin phí bắt buộc thành công.");
+                    loadFixedFees();
+                } else {
+                    showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể lưu thông tin phí vào CSDL.");
+                }
+            } catch (Exception e) {
+                showAlert(Alert.AlertType.ERROR, "Lỗi", "Có lỗi xảy ra: " + e.getMessage());
+            }
+        }
+    }
+
+    private void showVoluntaryFeeDialog(DanhMucPhi item) {
+        boolean adding = (item == null);
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle(adding ? "Thêm phí tự nguyện mới" : "Chỉnh sửa phí tự nguyện");
+        dialog.setHeaderText(null);
+
+        ButtonType okButtonType = new ButtonType("OK", ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(okButtonType, ButtonType.CANCEL);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+
+        TextField txtCode = new TextField(adding ? "" : item.getMaPhi());
+        if (!adding) txtCode.setDisable(true); // Can't change code after creation
+        TextField txtName = new TextField(adding ? "" : item.getTenPhi());
+        TextField txtNote = new TextField(adding ? "" : item.getGhiChu());
+
+        grid.add(new Label("Mã phí:"), 0, 0);
+        grid.add(txtCode, 1, 0);
+        grid.add(new Label("Tên phí:"), 0, 1);
+        grid.add(txtName, 1, 1);
+        grid.add(new Label("Ghi chú:"), 0, 2);
+        grid.add(txtNote, 1, 2);
+
+        dialog.getDialogPane().setContent(grid);
+
+        final Button btnOk = (Button) dialog.getDialogPane().lookupButton(okButtonType);
+        btnOk.addEventFilter(ActionEvent.ACTION, ae -> {
+            if (txtCode.getText().trim().isEmpty() || txtName.getText().trim().isEmpty()) {
+                showAlert(Alert.AlertType.ERROR, "Lỗi", "Vui lòng nhập đầy đủ thông tin bắt buộc!");
+                ae.consume();
+                return;
+            }
+            if (adding && fixedFeeService.isMaPhiExists(txtCode.getText().trim())) {
+                showAlert(Alert.AlertType.ERROR, "Lỗi", "Mã phí đã tồn tại trong hệ thống!");
+                ae.consume();
+            }
+        });
+
+        Optional<ButtonType> result = dialog.showAndWait();
+        if (result.isPresent() && result.get() == okButtonType) {
+            try {
+                DanhMucPhi phi = adding ? new DanhMucPhi() : item;
+                phi.setMaPhi(txtCode.getText().trim().toUpperCase());
+                phi.setTenPhi(txtName.getText().trim());
+                phi.setLoaiPhi("TU_NGUYEN");
+                phi.setLoaiTinhGia("CO_DINH"); // Default type
+                phi.setDonGia(BigDecimal.ZERO); // Default 0
+                phi.setGhiChu(txtNote.getText().trim());
+
+                boolean success = adding ? fixedFeeService.addDanhMucPhi(phi) : fixedFeeService.updateDanhMucPhi(phi);
+                if (success) {
+                    showAlert(Alert.AlertType.INFORMATION, "Thành công", "Lưu thông tin phí tự nguyện thành công.");
                     loadFixedFees();
                 } else {
                     showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể lưu thông tin phí vào CSDL.");
@@ -224,22 +375,51 @@ public class FeeController {
         alert.setHeaderText(null);
         if (alert.showAndWait().orElse(ButtonType.NO) == ButtonType.YES) {
             if (fixedFeeService.deleteDanhMucPhi(item.getId())) {
-                showAlert(Alert.AlertType.INFORMATION, "Thành công", "Đã xóa phí cố định.");
+                showAlert(Alert.AlertType.INFORMATION, "Thành công", "Đã xóa phí.");
                 loadFixedFees();
             } else {
-                showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể xóa phí cố định. Có thể có dữ liệu liên kết.");
+                showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể xóa phí. Có thể có dữ liệu liên kết.");
             }
         }
     }
 
-    private TableCell<DanhMucPhi, Void> actionCellFixedFees() {
+    private TableCell<DanhMucPhi, Void> actionCellMandatoryFees() {
         return new TableCell<>() {
             private final Button editBtn = createActionButton("✎");
             private final Button deleteBtn = createActionButton("🗑");
             private final HBox box = new HBox(8, editBtn, deleteBtn);
             {
                 box.setAlignment(Pos.CENTER);
-                editBtn.setOnAction(e -> showFixedFeeDialog(getTableView().getItems().get(getIndex())));
+                editBtn.setOnAction(e -> showMandatoryFeeDialog(getTableView().getItems().get(getIndex())));
+                deleteBtn.setOnAction(e -> handleDeleteFixedFee(getTableView().getItems().get(getIndex())));
+            }
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    DanhMucPhi phi = getTableView().getItems().get(getIndex());
+                    if ("DIEN".equals(phi.getMaPhi())) {
+                        box.getChildren().setAll(editBtn);
+                    } else {
+                        box.getChildren().setAll(editBtn, deleteBtn);
+                    }
+                    setGraphic(box);
+                }
+                setAlignment(Pos.CENTER);
+            }
+        };
+    }
+
+    private TableCell<DanhMucPhi, Void> actionCellVoluntaryFees() {
+        return new TableCell<>() {
+            private final Button editBtn = createActionButton("✎");
+            private final Button deleteBtn = createActionButton("🗑");
+            private final HBox box = new HBox(8, editBtn, deleteBtn);
+            {
+                box.setAlignment(Pos.CENTER);
+                editBtn.setOnAction(e -> showVoluntaryFeeDialog(getTableView().getItems().get(getIndex())));
                 deleteBtn.setOnAction(e -> handleDeleteFixedFee(getTableView().getItems().get(getIndex())));
             }
             @Override
@@ -347,7 +527,7 @@ public class FeeController {
     private void handleInputReadings(KhoanThu run) {
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Nhập số liệu chỉ số - " + run.getTenKhoanThu());
-        dialog.setHeaderText("Nhập các chỉ số tiêu thụ (Điện, Nước, Quỹ tự nguyện) cho các hộ dân.\nNhấn Lưu toàn bộ để cập nhật tất cả hóa đơn.");
+        dialog.setHeaderText("Nhập các chỉ số tiêu thụ cần nhập tay cho các hộ dân.\nNhấn Lưu toàn bộ để cập nhật tất cả hóa đơn.");
         dialog.getDialogPane().setMinWidth(800);
         dialog.getDialogPane().setMinHeight(500);
 
@@ -373,22 +553,28 @@ public class FeeController {
         // Headers
         Label lblColHk = new Label("Căn Hộ");
         Label lblColOwner = new Label("Chủ Hộ");
-        Label lblColDien = new Label("Điện (kWh)");
-        Label lblColNuoc = new Label("Nước (m³)");
-        Label lblColQuy = new Label("Quỹ Từ Thiện (đ)");
-
         String headerStyle = "-fx-font-weight: bold; -fx-text-fill: #1e293b; -fx-font-size: 13px;";
         lblColHk.setStyle(headerStyle);
         lblColOwner.setStyle(headerStyle);
-        lblColDien.setStyle(headerStyle);
-        lblColNuoc.setStyle(headerStyle);
-        lblColQuy.setStyle(headerStyle);
 
         grid.add(lblColHk, 0, 0);
         grid.add(lblColOwner, 1, 0);
-        grid.add(lblColDien, 2, 0);
-        grid.add(lblColNuoc, 3, 0);
-        grid.add(lblColQuy, 4, 0);
+
+        List<DanhMucPhi> nhapTayFees = fixedFeeService.getAllDanhMucPhi().stream()
+                .filter(f -> "BAT_BUOC".equals(f.getLoaiPhi()) && "NHAP_TAY".equals(f.getLoaiTinhGia()))
+                .sorted((f1, f2) -> {
+                    if ("DIEN".equals(f1.getMaPhi())) return -1;
+                    if ("DIEN".equals(f2.getMaPhi())) return 1;
+                    return f1.getMaPhi().compareTo(f2.getMaPhi());
+                })
+                .collect(java.util.stream.Collectors.toList());
+
+        int colIdx = 2;
+        for (DanhMucPhi fee : nhapTayFees) {
+            Label lblFee = new Label(fee.getTenPhi());
+            lblFee.setStyle(headerStyle);
+            grid.add(lblFee, colIdx++, 0);
+        }
 
         // Keep track of textfields for saving
         java.util.Map<Integer, java.util.Map<String, TextField>> inputsMap = new java.util.HashMap<>();
@@ -408,33 +594,20 @@ public class FeeController {
 
             java.util.Map<String, TextField> feeTextFields = new java.util.HashMap<>();
 
-            ChiTietHoaDon dienDet = details.stream().filter(d -> "DIEN".equals(d.getMaPhi())).findFirst().orElse(null);
-            ChiTietHoaDon nuocDet = details.stream().filter(d -> "NUOC".equals(d.getMaPhi())).findFirst().orElse(null);
-            ChiTietHoaDon quyDet = details.stream().filter(d -> "QUYTUTHEN".equals(d.getMaPhi())).findFirst().orElse(null);
+            int tempColIdx = 2;
+            for (DanhMucPhi fee : nhapTayFees) {
+                ChiTietHoaDon det = details.stream()
+                        .filter(d -> fee.getMaPhi().equals(d.getMaPhi()))
+                        .findFirst()
+                        .orElse(null);
 
-            // Electricity input
-            TextField txtDien = new TextField(dienDet != null ? dienDet.getSoLuong().toString() : "0");
-            txtDien.setPrefWidth(100);
-            txtDien.setDisable(!isDraft);
-            setupNumericFormatter(txtDien);
-            grid.add(txtDien, 2, rowIndex);
-            feeTextFields.put("DIEN", txtDien);
-
-            // Water input
-            TextField txtNuoc = new TextField(nuocDet != null ? nuocDet.getSoLuong().toString() : "0");
-            txtNuoc.setPrefWidth(100);
-            txtNuoc.setDisable(!isDraft);
-            setupNumericFormatter(txtNuoc);
-            grid.add(txtNuoc, 3, rowIndex);
-            feeTextFields.put("NUOC", txtNuoc);
-
-            // Charity donation input
-            TextField txtQuy = new TextField(quyDet != null ? quyDet.getSoLuong().toString() : "0");
-            txtQuy.setPrefWidth(130);
-            txtQuy.setDisable(!isDraft);
-            setupNumericFormatter(txtQuy);
-            grid.add(txtQuy, 4, rowIndex);
-            feeTextFields.put("QUYTUTHEN", txtQuy);
+                TextField txtField = new TextField(det != null ? det.getSoLuong().toString() : "0");
+                txtField.setPrefWidth(120);
+                txtField.setDisable(!isDraft);
+                setupNumericFormatter(txtField);
+                grid.add(txtField, tempColIdx++, rowIndex);
+                feeTextFields.put(fee.getMaPhi(), txtField);
+            }
 
             inputsMap.put(hd.getId(), feeTextFields);
             rowIndex++;
@@ -455,21 +628,15 @@ public class FeeController {
                         List<ChiTietHoaDon> details = detailsMap.get(hd.getId());
                         java.util.Map<String, TextField> feeTextFields = inputsMap.get(hd.getId());
 
-                        ChiTietHoaDon dienDet = details.stream().filter(d -> "DIEN".equals(d.getMaPhi())).findFirst().orElse(null);
-                        ChiTietHoaDon nuocDet = details.stream().filter(d -> "NUOC".equals(d.getMaPhi())).findFirst().orElse(null);
-                        ChiTietHoaDon quyDet = details.stream().filter(d -> "QUYTUTHEN".equals(d.getMaPhi())).findFirst().orElse(null);
-
-                        if (dienDet != null) {
-                            String val = feeTextFields.get("DIEN").getText().trim();
-                            dienDet.setSoLuong(val.isEmpty() ? BigDecimal.ZERO : new BigDecimal(val));
-                        }
-                        if (nuocDet != null) {
-                            String val = feeTextFields.get("NUOC").getText().trim();
-                            nuocDet.setSoLuong(val.isEmpty() ? BigDecimal.ZERO : new BigDecimal(val));
-                        }
-                        if (quyDet != null) {
-                            String val = feeTextFields.get("QUYTUTHEN").getText().trim();
-                            quyDet.setSoLuong(val.isEmpty() ? BigDecimal.ZERO : new BigDecimal(val));
+                        for (DanhMucPhi fee : nhapTayFees) {
+                            ChiTietHoaDon det = details.stream()
+                                    .filter(d -> fee.getMaPhi().equals(d.getMaPhi()))
+                                    .findFirst()
+                                    .orElse(null);
+                            if (det != null) {
+                                String val = feeTextFields.get(fee.getMaPhi()).getText().trim();
+                                det.setSoLuong(val.isEmpty() ? BigDecimal.ZERO : new BigDecimal(val));
+                            }
                         }
 
                         invoiceService.saveInvoiceDetails(hd.getId(), details);
@@ -620,5 +787,104 @@ public class FeeController {
         alert.setHeaderText(null);
         alert.setContentText(content);
         alert.showAndWait();
+    }
+
+    private void showDienPricingDialog(DanhMucPhi item) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Chỉnh sửa biểu giá điện bậc thang");
+        dialog.setHeaderText("Cấu hình đơn giá và sản lượng tối đa cho từng bậc thang điện.");
+
+        ButtonType okButtonType = new ButtonType("OK", ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(okButtonType, ButtonType.CANCEL);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(15);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 20, 20, 20));
+
+        Label lblHeaderBac = new Label("Bậc thang");
+        Label lblHeaderPrice = new Label("Đơn giá (đồng/kWh)");
+        Label lblHeaderLimit = new Label("Sản lượng tối đa (kWh)");
+        
+        String headerStyle = "-fx-font-weight: bold; -fx-text-fill: #1e293b;";
+        lblHeaderBac.setStyle(headerStyle);
+        lblHeaderPrice.setStyle(headerStyle);
+        lblHeaderLimit.setStyle(headerStyle);
+
+        grid.add(lblHeaderBac, 0, 0);
+        grid.add(lblHeaderPrice, 1, 0);
+        grid.add(lblHeaderLimit, 2, 0);
+
+        double[][] tiers = DanhMucPhi.parseDienTiers(item.getGhiChu());
+
+        TextField[] txtPrices = new TextField[6];
+        TextField[] txtLimits = new TextField[5];
+
+        for (int i = 0; i < 6; i++) {
+            grid.add(new Label("Bậc thang " + (i + 1)), 0, i + 1);
+
+            txtPrices[i] = new TextField(String.valueOf((int) tiers[i][0]));
+            txtPrices[i].setPrefWidth(150);
+            setupIntegerFormatter(txtPrices[i]);
+            grid.add(txtPrices[i], 1, i + 1);
+
+            if (i < 5) {
+                txtLimits[i] = new TextField(String.valueOf((int) tiers[i][1]));
+                txtLimits[i].setPrefWidth(150);
+                setupIntegerFormatter(txtLimits[i]);
+                grid.add(txtLimits[i], 2, i + 1);
+            } else {
+                Label lblVoHan = new Label("Vô hạn");
+                lblVoHan.setStyle("-fx-text-fill: #64748b; -fx-font-style: italic;");
+                grid.add(lblVoHan, 2, i + 1);
+            }
+        }
+
+        dialog.getDialogPane().setContent(grid);
+
+        final Button btnOk = (Button) dialog.getDialogPane().lookupButton(okButtonType);
+        btnOk.addEventFilter(ActionEvent.ACTION, ae -> {
+            for (int i = 0; i < 6; i++) {
+                if (txtPrices[i].getText().trim().isEmpty() || (i < 5 && txtLimits[i].getText().trim().isEmpty())) {
+                    showAlert(Alert.AlertType.ERROR, "Lỗi", "Vui lòng nhập đầy đủ giá trị cho tất cả các bậc!");
+                    ae.consume();
+                    return;
+                }
+            } 
+        });
+
+        Optional<ButtonType> result = dialog.showAndWait();
+        if (result.isPresent() && result.get() == okButtonType) {
+            try {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < 6; i++) {
+                    double p = Double.parseDouble(txtPrices[i].getText().trim());
+                    double l = (i < 5) ? Double.parseDouble(txtLimits[i].getText().trim()) : 0.0;
+                    sb.append(p).append(",").append(l);
+                    if (i < 5) {
+                        sb.append(";");
+                    }
+                }
+                item.setGhiChu(sb.toString());
+                item.setDonGia(BigDecimal.ZERO);
+                
+                boolean success = fixedFeeService.updateDanhMucPhi(item);
+                if (success) {
+                    showAlert(Alert.AlertType.INFORMATION, "Thành công", "Lưu biểu giá điện bậc thang thành công.");
+                    loadFixedFees();
+                } else {
+                    showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể lưu thông tin vào CSDL.");
+                }
+            } catch (Exception e) {
+                showAlert(Alert.AlertType.ERROR, "Lỗi", "Có lỗi xảy ra: " + e.getMessage());
+            }
+        }
+    }
+
+    private void setupIntegerFormatter(TextField textField) {
+        textField.setTextFormatter(new TextFormatter<>(change -> {
+            if (change.getControlNewText().matches("\\d*")) return change;
+            return null;
+        }));
     }
 }
