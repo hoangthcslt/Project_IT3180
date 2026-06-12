@@ -2,9 +2,11 @@ package com.bluemoon.controllers;
 
 import com.bluemoon.models.HoaDon;
 import com.bluemoon.models.ChiTietHoaDon;
+import com.bluemoon.models.DanhMucPhi;
 import com.bluemoon.models.PaymentStatusView;
 import com.bluemoon.services.HoaDonService;
 import com.bluemoon.services.PaymentService;
+import com.bluemoon.services.DanhMucPhiService;
 import com.bluemoon.repositories.PaymentRepository;
 
 import javafx.beans.property.SimpleObjectProperty;
@@ -152,6 +154,9 @@ public class PaymentController {
     }
 
     private void handlePayInvoice(HoaDon inv) {
+        DanhMucPhiService feeService = new DanhMucPhiService();
+        List<DanhMucPhi> allFees = feeService.getAllDanhMucPhi();
+
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Hóa đơn: " + inv.getMaHoaDon());
         dialog.setHeaderText("Chi tiết các phí căn hộ: " + inv.getMaHoKhau() + " - " + inv.getTenChuHo());
@@ -187,6 +192,85 @@ public class PaymentController {
 
         box.getChildren().addAll(new Label("Danh mục phí chi tiết:"), tableDetails);
 
+        final Label[] lblRemainingRef = new Label[1];
+        final TextField[] txtAmountRef = new TextField[1];
+        final BigDecimal[] currentTotalRef = new BigDecimal[1];
+        currentTotalRef[0] = inv.getTongTien();
+
+        Runnable recalculateTotals = () -> {
+            BigDecimal newTotal = BigDecimal.ZERO;
+            for (ChiTietHoaDon det : tableDetails.getItems()) {
+                newTotal = newTotal.add(det.getThanhTien());
+            }
+            currentTotalRef[0] = newTotal;
+            BigDecimal rem = newTotal.subtract(inv.getSoTienDaNop());
+            if (lblRemainingRef[0] != null) {
+                lblRemainingRef[0].setText(rem.toString() + " đ");
+            }
+            if (txtAmountRef[0] != null) {
+                txtAmountRef[0].setText(rem.toString());
+            }
+        };
+
+        colPrice.setCellFactory(column -> new TableCell<ChiTietHoaDon, BigDecimal>() {
+            private final TextField textField = new TextField();
+            {
+                textField.setPrefWidth(100);
+                textField.setTextFormatter(new TextFormatter<>(change -> {
+                    if (change.getControlNewText().matches("\\d*\\.?\\d*")) return change;
+                    return null;
+                }));
+                textField.focusedProperty().addListener((obs, oldVal, newVal) -> {
+                    if (!newVal) {
+                        commitChange();
+                    }
+                });
+                textField.setOnAction(e -> commitChange());
+            }
+
+            private void commitChange() {
+                ChiTietHoaDon rowItem = getTableRow().getItem();
+                if (rowItem != null) {
+                    try {
+                        String txtVal = textField.getText().trim();
+                        BigDecimal newPrice = txtVal.isEmpty() ? BigDecimal.ZERO : new BigDecimal(txtVal);
+                        rowItem.setDonGia(newPrice);
+                        rowItem.setThanhTien(newPrice.multiply(rowItem.getSoLuong()));
+                        getTableView().refresh();
+                        recalculateTotals.run();
+                    } catch (NumberFormatException e) {
+                        textField.setText(rowItem.getDonGia().toString());
+                    }
+                }
+            }
+
+            @Override
+            protected void updateItem(BigDecimal item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || getTableRow() == null || getTableRow().getItem() == null) {
+                    setGraphic(null);
+                    setText(null);
+                } else {
+                    ChiTietHoaDon rowItem = getTableRow().getItem();
+                    boolean isVoluntary = allFees.stream()
+                            .anyMatch(f -> rowItem.getMaPhi().equals(f.getMaPhi()) && "TU_NGUYEN".equals(f.getLoaiPhi()));
+                    boolean canEdit = "CHUA_NOP".equals(inv.getTrangThai()) && isVoluntary;
+                    if (canEdit) {
+                        textField.setText(item != null ? item.toString() : "0");
+                        setGraphic(textField);
+                        setText(null);
+                    } else {
+                        setGraphic(null);
+                        if ("DIEN".equals(rowItem.getMaPhi())) {
+                            setText("Bậc thang");
+                        } else {
+                            setText(item != null ? item.toString() : "0");
+                        }
+                    }
+                }
+            }
+        });
+
         BigDecimal remaining = inv.getTongTien().subtract(inv.getSoTienDaNop());
 
         // Payment form section if not paid
@@ -198,16 +282,16 @@ public class PaymentController {
             payGrid.setHgap(10);
             payGrid.setVgap(10);
 
-            Label lblRemaining = new Label(remaining.toString() + " đ");
-            lblRemaining.setStyle("-fx-font-weight: bold; -fx-text-fill: #ef4444;");
+            lblRemainingRef[0] = new Label(remaining.toString() + " đ");
+            lblRemainingRef[0].setStyle("-fx-font-weight: bold; -fx-text-fill: #ef4444;");
 
             ComboBox<String> cbMethod = new ComboBox<>(FXCollections.observableArrayList("TIEN_MAT", "CHUYEN_KHOAN"));
             cbMethod.setValue("TIEN_MAT");
 
             TextField txtPayer = new TextField(inv.getTenChuHo());
-            TextField txtAmount = new TextField(remaining.toString());
+            txtAmountRef[0] = new TextField(remaining.toString());
 
-            txtAmount.setTextFormatter(new TextFormatter<>(change -> {
+            txtAmountRef[0].setTextFormatter(new TextFormatter<>(change -> {
                 if (change.getControlNewText().matches("\\d*\\.?\\d*")) return change;
                 return null;
             }));
@@ -216,28 +300,36 @@ public class PaymentController {
             payBtn.setStyle("-fx-background-color: #22c55e; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 6; -fx-cursor: hand;");
 
             payGrid.add(new Label("Nợ còn lại:"), 0, 0);
-            payGrid.add(lblRemaining, 1, 0);
+            payGrid.add(lblRemainingRef[0], 1, 0);
             payGrid.add(new Label("Hình thức:"), 0, 1);
             payGrid.add(cbMethod, 1, 1);
             payGrid.add(new Label("Người nộp:"), 0, 2);
             payGrid.add(txtPayer, 1, 2);
             payGrid.add(new Label("Số tiền đóng:"), 0, 3);
-            payGrid.add(txtAmount, 1, 3);
+            payGrid.add(txtAmountRef[0], 1, 3);
             payGrid.add(payBtn, 1, 4);
 
             payBtn.setOnAction(e -> {
-                if (txtPayer.getText().trim().isEmpty() || txtAmount.getText().trim().isEmpty()) {
+                if (txtPayer.getText().trim().isEmpty() || txtAmountRef[0].getText().trim().isEmpty()) {
                     showAlert(Alert.AlertType.WARNING, "Cảnh báo", "Vui lòng nhập người nộp và số tiền!");
                     return;
                 }
                 try {
-                    BigDecimal amt = new BigDecimal(txtAmount.getText().trim());
+                    // 1. Save updated details to DB (which updates tong_tien on the invoice)
+                    boolean detailsSaved = invoiceService.saveInvoiceDetails(inv.getId(), details);
+                    if (!detailsSaved) {
+                        showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể lưu chi tiết hóa đơn.");
+                        return;
+                    }
+
+                    BigDecimal amt = new BigDecimal(txtAmountRef[0].getText().trim());
                     if (amt.compareTo(BigDecimal.ZERO) <= 0) {
                         showAlert(Alert.AlertType.WARNING, "Cảnh báo", "Số tiền đóng phải lớn hơn 0!");
                         return;
                     }
-                    if (amt.compareTo(remaining) > 0) {
-                        showAlert(Alert.AlertType.WARNING, "Cảnh báo", "Số tiền đóng không được vượt quá số nợ còn lại (" + remaining + " đ)!");
+                    BigDecimal newRemaining = currentTotalRef[0].subtract(inv.getSoTienDaNop());
+                    if (amt.compareTo(newRemaining) > 0) {
+                        showAlert(Alert.AlertType.WARNING, "Cảnh báo", "Số tiền đóng không được vượt quá số nợ còn lại (" + newRemaining + " đ)!");
                         return;
                     }
 
